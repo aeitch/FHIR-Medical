@@ -1,7 +1,7 @@
 import logging
 
 from backend.app.audit.middleware import CorrelationIdMiddleware
-from backend.app.routers import audit, health, narrative, patients, ur
+from backend.app.routers import audit, health, narrative, patients, smart, ur
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -33,6 +33,7 @@ app.add_middleware(CorrelationIdMiddleware)
 
 # Mount Routers
 app.include_router(health.router)
+app.include_router(smart.router)
 app.include_router(patients.router, prefix="/api")
 app.include_router(ur.router, prefix="/api")
 app.include_router(narrative.router, prefix="/api")
