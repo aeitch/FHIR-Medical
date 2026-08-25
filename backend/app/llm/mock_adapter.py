@@ -49,6 +49,32 @@ class MockLLMAdapter(BaseLLMAdapter):
                 "InterQual: Syncope Observation Criteria",
             ]
             rationale = "Hemodynamically stable with negative cardiac biomarkers; appropriate for observation."
+        elif "004" in pid or "e1-2g0" in pid.lower() or "sepsis" in conditions_str:
+            narrative = (
+                f"MEDICAL NECESSITY APPEAL & SEVERE SEPSIS JUSTIFICATION for {name}:\n\n"
+                f"The patient presented with severe sepsis secondary to right lower lobe community-acquired pneumonia, characterized by "
+                f"high fevers (102.8°F), initial hypotension requiring crystalloid resuscitation, and elevated serum lactate (3.8 mmol/L). "
+                f"Empiric IV broad-spectrum antibiotic therapy and continuous hemodynamic monitoring were initiated immediately. Given the "
+                f"multi-day intravenous antibiotic course and acute organ dysfunction risk, inpatient admission is medically necessary under CMS 42 CFR § 412.3 and Surviving Sepsis Campaign Guidelines."
+            )
+            cited = [
+                "CMS 2-Midnight Rule (42 CFR 412.3)",
+                "Surviving Sepsis Campaign International Guidelines",
+                "MCG M-330: Sepsis and Systemic Inflammatory Response",
+            ]
+            rationale = "Severe sepsis with hyperlactatemia requiring IV broad-spectrum antimicrobial resuscitation justifies inpatient stay."
+        elif "005" in pid or "e63w" in pid.lower() or "chest pain" in conditions_str:
+            narrative = (
+                f"UTILIZATION REVIEW CLINICAL SUMMARY for {name}:\n\n"
+                f"The patient presented for evaluation of atypical positional chest wall pain. Serial high-sensitivity cardiac troponins "
+                f"remained negative (< 0.008 ng/mL) and 12-lead electrocardiograms demonstrated normal sinus rhythm without ischemic ST-T changes. "
+                f"The patient is appropriate for outpatient observation status (12-24 hours) for serial biomarker rule-out and provocative stress testing protocol."
+            )
+            cited = [
+                "CMS Observation Services Policy (Medicare Benefit Policy Manual Ch. 6 §20.6)",
+                "AHA/ACC Chest Pain Guideline: Low-Risk Observation Protocol",
+            ]
+            rationale = "Atypical chest pain with negative cardiac biomarkers; outpatient observation indicated."
         else:
             narrative = (
                 f"MEDICAL NECESSITY APPEAL JUSTIFICATION for {name}:\n\n"

@@ -17,6 +17,8 @@ class UREngine:
         is_chf = False
         is_copd = False
         is_syncope = False
+        is_sepsis = False
+        is_chest_pain = False
 
         for cond in patient.conditions:
             code_text = cond.get("code", {}).get("text", "").lower()
@@ -29,12 +31,21 @@ class UREngine:
                 is_copd = True
             if any(c.startswith("R55") for c in icd_codes) or "syncope" in code_text:
                 is_syncope = True
+            if (
+                any(c.startswith(("A41", "J18")) for c in icd_codes)
+                or "sepsis" in code_text
+                or "pneumonia" in code_text
+            ):
+                is_sepsis = True
+            if any(c.startswith("R07") for c in icd_codes) or "chest pain" in code_text:
+                is_chest_pain = True
 
         # 2. Evaluate Observations & Vitals
         has_hypoxia = False
         has_hypercapnia = False
         elevated_bnp = False
         positive_troponin = False
+        elevated_lactate = False
 
         for obs in patient.observations:
             val_qty = obs.get("valueQuantity", {})
@@ -58,6 +69,11 @@ class UREngine:
             if "troponin" in display and val > 0.04:
                 positive_troponin = True
                 criteria_met.append(f"Positive cardiac biomarker elevation (Troponin {val} ng/mL)")
+            if ("lactate" in display or "lactic" in display) and val > 2.0:
+                elevated_lactate = True
+                criteria_met.append(
+                    f"Elevated serum lactate ({val} mmol/L) demonstrating systemic tissue hypoperfusion"
+                )
 
         # 3. Decision Logic & Severity/Intensity Scoring
         if is_chf and (has_hypoxia or elevated_bnp):
@@ -82,17 +98,39 @@ class UREngine:
                 "Acute hypercapnic respiratory failure requiring positive pressure ventilation warrants inpatient stay."
             )
 
-        elif is_syncope:
+        elif is_sepsis or (is_sepsis and elevated_lactate):
+            severity = "high"
+            intensity = "high"
+            criteria_met.append(
+                "Severe sepsis protocol initiated with broad-spectrum IV antibiotics and aggressive fluid resuscitation"
+            )
+            criteria_met.append("High risk of rapid hemodynamic deterioration requiring inpatient telemetry monitoring")
+            status = "inpatient"
+            score = 0.94
+            summary = (
+                "Severe sepsis with elevated lactate and pneumonia consolidation meets inpatient admission criteria."
+            )
+
+        elif is_chest_pain or is_syncope:
             severity = "low" if not positive_troponin else "moderate"
             intensity = "low"
             status = "observation"
-            score = 0.88
+            score = 0.89 if is_chest_pain else 0.88
             two_midnight = False
-            criteria_met.append("Single syncopal episode with negative cardiac biomarkers and stable hemodynamics")
-            criteria_met.append(
-                "Appropriate for 12-24 hour observation services per CMS Medicare Benefit Policy Manual Ch. 6"
-            )
-            summary = "Patient is hemodynamically stable with negative biomarkers; observation status indicated."
+            if is_chest_pain:
+                criteria_met.append("Low-risk chest pain with negative cardiac biomarkers and non-ischemic EKG")
+                criteria_met.append(
+                    "Observation services indicated for serial biomarker rule-out protocol (12-24 hours)"
+                )
+                summary = (
+                    "Low-risk atypical chest pain appropriate for outpatient observation and serial troponin rule-out."
+                )
+            else:
+                criteria_met.append("Single syncopal episode with negative cardiac biomarkers and stable hemodynamics")
+                criteria_met.append(
+                    "Appropriate for 12-24 hour observation services per CMS Medicare Benefit Policy Manual Ch. 6"
+                )
+                summary = "Patient is hemodynamically stable with negative biomarkers; observation status indicated."
 
         else:
             status = "inpatient" if two_midnight else "observation"

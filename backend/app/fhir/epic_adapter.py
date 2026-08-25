@@ -19,6 +19,11 @@ class EpicFHIRAdapter(BaseFHIRAdapter):
         {"id": "erXuFYUfucBZaryVpgxafgw3", "label": "Epic Sandbox: Camila Lopez (Cardiac/Inpatient)"},
         {"id": "eq081-VQEgP8FsSTUDALVUQ3", "label": "Epic Sandbox: Derrick Lin (Syncope/Observation)"},
         {"id": "egqBHVfQCU3FAoDRSmkeKzg3", "label": "Epic Sandbox: Jason R. Miller (Pulmonary/COPD)"},
+        {"id": "e1-2G0l2g-V7S.3fT.ZqBqg3", "label": "Epic Sandbox: Desiree D. Robinson (Severe Sepsis/Inpatient)"},
+        {
+            "id": "e63wRT.t-agODK-iGNc.h-A3",
+            "label": "Epic Sandbox: Bradley P. Taylor (Atypical Chest Pain/Observation)",
+        },
     ]
 
     def __init__(
@@ -85,6 +90,8 @@ class EpicFHIRAdapter(BaseFHIRAdapter):
                 ("erXuFYUfucBZaryVpgxafgw3", "synthetic-pt-001"),
                 ("eq081-VQEgP8FsSTUDALVUQ3", "synthetic-pt-002"),
                 ("egqBHVfQCU3FAoDRSmkeKzg3", "synthetic-pt-003"),
+                ("e1-2G0l2g-V7S.3fT.ZqBqg3", "synthetic-pt-004"),
+                ("e63wRT.t-agODK-iGNc.h-A3", "synthetic-pt-005"),
             ]
             for epic_id, seed_id in epic_seeds:
                 s = await adapter.get_patient_summary(seed_id)
@@ -162,9 +169,13 @@ class EpicFHIRAdapter(BaseFHIRAdapter):
             "erXuFYUfucBZaryVpgxafgw3": "synthetic-pt-001",
             "eq081-VQEgP8FsSTUDALVUQ3": "synthetic-pt-002",
             "egqBHVfQCU3FAoDRSmkeKzg3": "synthetic-pt-003",
+            "e1-2G0l2g-V7S.3fT.ZqBqg3": "synthetic-pt-004",
+            "e63wRT.t-agODK-iGNc.h-A3": "synthetic-pt-005",
             "synthetic-pt-001": "synthetic-pt-001",
             "synthetic-pt-002": "synthetic-pt-002",
             "synthetic-pt-003": "synthetic-pt-003",
+            "synthetic-pt-004": "synthetic-pt-004",
+            "synthetic-pt-005": "synthetic-pt-005",
         }
         target_seed = fallback_map.get(patient_id)
         if not target_seed:
@@ -193,9 +204,13 @@ class EpicFHIRAdapter(BaseFHIRAdapter):
             "erXuFYUfucBZaryVpgxafgw3": "synthetic-pt-001",
             "eq081-VQEgP8FsSTUDALVUQ3": "synthetic-pt-002",
             "egqBHVfQCU3FAoDRSmkeKzg3": "synthetic-pt-003",
+            "e1-2G0l2g-V7S.3fT.ZqBqg3": "synthetic-pt-004",
+            "e63wRT.t-agODK-iGNc.h-A3": "synthetic-pt-005",
             "synthetic-pt-001": "synthetic-pt-001",
             "synthetic-pt-002": "synthetic-pt-002",
             "synthetic-pt-003": "synthetic-pt-003",
+            "synthetic-pt-004": "synthetic-pt-004",
+            "synthetic-pt-005": "synthetic-pt-005",
         }
         target_seed = fallback_map.get(patient_id)
         if not target_seed:

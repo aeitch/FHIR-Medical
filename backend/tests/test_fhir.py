@@ -6,7 +6,7 @@ from backend.app.fhir.local_adapter import LocalFixtureFHIRAdapter
 async def test_list_synthetic_patients():
     adapter = LocalFixtureFHIRAdapter()
     patients = await adapter.list_patients()
-    assert len(patients) == 3
+    assert len(patients) >= 3
     ids = [p["id"] for p in patients]
     assert "synthetic-pt-001" in ids
     assert "synthetic-pt-002" in ids

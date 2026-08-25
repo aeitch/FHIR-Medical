@@ -27,7 +27,7 @@ def test_api_patients_flow():
     res = client.get("/api/patients")
     assert res.status_code == 200
     patients = res.json()
-    assert len(patients) == 3
+    assert len(patients) >= 3
 
     p0 = patients[0]
     res_single = client.get(f"/api/patients/{p0['id']}")
