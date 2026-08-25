@@ -1,0 +1,205 @@
+{
+  "resourceType": "Bundle",
+  "id": "synthetic-pt-001-bundle",
+  "type": "collection",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:patient-001",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "synthetic-pt-001",
+        "identifier": [
+          {
+            "system": "http://hospital.demo.org/mrn",
+            "value": "SYNTH-MRN-1001"
+          }
+        ],
+        "active": true,
+        "name": [
+          {
+            "use": "official",
+            "family": "Miller",
+            "given": ["James", "R."]
+          }
+        ],
+        "gender": "male",
+        "birthDate": "1958-04-12"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:encounter-001",
+      "resource": {
+        "resourceType": "Encounter",
+        "id": "enc-001",
+        "status": "in-progress",
+        "class": {
+          "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+          "code": "IMP",
+          "display": "inpatient encounter"
+        },
+        "subject": {
+          "reference": "Patient/synthetic-pt-001",
+          "display": "James R. Miller"
+        },
+        "period": {
+          "start": "2026-08-24T08:30:00Z"
+        },
+        "reasonCode": [
+          {
+            "coding": [
+              {
+                "system": "http://snomed.info/sct",
+                "code": "42343007",
+                "display": "Congestive heart failure"
+              }
+            ],
+            "text": "Acute Decompensated Heart Failure Exacerbation"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:condition-001",
+      "resource": {
+        "resourceType": "Condition",
+        "id": "cond-001",
+        "clinicalStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+              "code": "active"
+            }
+          ]
+        },
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-category",
+                "code": "encounter-diagnosis"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/sid/icd-10-cm",
+              "code": "I50.23",
+              "display": "Acute on chronic systolic (congestive) heart failure"
+            }
+          ],
+          "text": "Acute Systolic Heart Failure with severe pulmonary congestion"
+        },
+        "subject": {
+          "reference": "Patient/synthetic-pt-001"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:obs-001",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-001",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "33762-6",
+              "display": "NT-proBNP"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/synthetic-pt-001"
+        },
+        "effectiveDateTime": "2026-08-24T09:15:00Z",
+        "valueQuantity": {
+          "value": 7840,
+          "unit": "pg/mL",
+          "system": "http://unitsofmeasure.org",
+          "code": "pg/mL"
+        },
+        "referenceRange": [
+          {
+            "high": {
+              "value": 450,
+              "unit": "pg/mL"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:obs-002",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-002",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "vital-signs"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "2708-6",
+              "display": "Oxygen saturation in Arterial blood"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/synthetic-pt-001"
+        },
+        "effectiveDateTime": "2026-08-24T08:45:00Z",
+        "valueQuantity": {
+          "value": 88,
+          "unit": "%",
+          "system": "http://unitsofmeasure.org",
+          "code": "%"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:docref-001",
+      "resource": {
+        "resourceType": "DocumentReference",
+        "id": "doc-001",
+        "status": "current",
+        "type": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "34117-2",
+              "display": "History and physical note"
+            }
+          ],
+          "text": "Emergency Department Admission H&P"
+        },
+        "subject": {
+          "reference": "Patient/synthetic-pt-001"
+        },
+        "date": "2026-08-24T10:00:00Z",
+        "description": "68yo M with severe dyspnea at rest, orthopnea, bilateral 3+ lower extremity edema. Requires IV Bumex drip and telemetry monitoring. Expected hospital stay > 2 midnights."
+      }
+    }
+  ]
+}
