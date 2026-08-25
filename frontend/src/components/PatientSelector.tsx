@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Calendar, FileText, CheckCircle2 } from 'lucide-react';
+import { User, FileText, CheckCircle2 } from 'lucide-react';
 import { PatientSummary } from '../types';
 
 interface Props {

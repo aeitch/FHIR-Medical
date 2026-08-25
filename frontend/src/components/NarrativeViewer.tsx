@@ -28,7 +28,17 @@ export const NarrativeViewer: React.FC<Props> = ({ narrative, loading, onGenerat
           <h3 className="text-base font-bold text-slate-900">LLM Payer-Style Medical Necessity Narrative</h3>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={targetPayer}
+            onChange={(e) => setTargetPayer(e.target.value)}
+            className="text-xs border border-slate-200 rounded-md px-2.5 py-1.5 bg-slate-50 text-slate-700 font-medium focus:ring-1 focus:ring-teal-500 focus:outline-none"
+          >
+            <option value="Medicare Advantage / Commercial">Medicare Advantage</option>
+            <option value="Traditional Medicare FFS">Medicare FFS (CMS 2-Midnight)</option>
+            <option value="Commercial Managed Care">Commercial PPO/HMO</option>
+          </select>
+
           <select
             value={provider}
             onChange={(e) => setProvider(e.target.value)}

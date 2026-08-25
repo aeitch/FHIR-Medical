@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Clock, Hash, CheckCircle2, User } from 'lucide-react';
+import { Shield, Clock, Hash, User } from 'lucide-react';
 import { AuditLogEntry } from '../types';
 
 interface Props {
