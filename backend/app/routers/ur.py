@@ -1,5 +1,5 @@
 from backend.app.audit.logger import audit_logger
-from backend.app.routers.patients import get_adapter
+from backend.app.fhir.registry import get_fhir_adapter
 from backend.app.ur_engine.engine import UREngine
 from backend.app.ur_engine.models import UREvaluationRequest, UREvaluationResponse
 from fastapi import APIRouter, HTTPException, Request
@@ -11,7 +11,7 @@ router = APIRouter(prefix="/ur", tags=["Utilization Review"])
 async def evaluate_patient(payload: UREvaluationRequest, request: Request):
     """Run utilization review decision engine against patient clinical data."""
     corr_id = getattr(request.state, "correlation_id", "local")
-    adapter = get_adapter()
+    adapter = get_fhir_adapter(payload.server)
     summary = await adapter.get_patient_summary(payload.patient_id)
     if not summary:
         raise HTTPException(
@@ -29,6 +29,7 @@ async def evaluate_patient(payload: UREvaluationRequest, request: Request):
             "recommended_status": evaluation.recommended_status,
             "confidence_score": evaluation.confidence_score,
             "two_midnight_met": evaluation.two_midnight_met,
+            "server": payload.server or "default",
         },
     )
     return evaluation

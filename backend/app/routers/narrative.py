@@ -1,10 +1,10 @@
 from backend.app.audit.logger import audit_logger
+from backend.app.fhir.registry import get_fhir_adapter
 from backend.app.llm.gemini_adapter import VertexAIGeminiAdapter
 from backend.app.llm.guardrails import PHIGuardrail
 from backend.app.llm.mock_adapter import MockLLMAdapter
 from backend.app.llm.models import NarrativeResponse
 from backend.app.llm.ollama_adapter import OllamaGemmaAdapter
-from backend.app.routers.patients import get_adapter
 from backend.app.ur_engine.engine import UREngine
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
@@ -14,6 +14,7 @@ router = APIRouter(prefix="/narrative", tags=["LLM Narrative"])
 
 class GeneratePayload(BaseModel):
     patient_id: str
+    server: str | None = None
     target_payer: str | None = "Medicare Advantage / Commercial"
     model_override: str | None = "gemini-2.5-flash"
     custom_context: str | None = None
@@ -40,7 +41,7 @@ async def generate_narrative_endpoint(payload: GeneratePayload, request: Request
             )
 
     # 2. Fetch Patient Data & UR Evaluation
-    adapter_fhir = get_adapter()
+    adapter_fhir = get_fhir_adapter(payload.server)
     summary = await adapter_fhir.get_patient_summary(payload.patient_id)
     if not summary:
         raise HTTPException(

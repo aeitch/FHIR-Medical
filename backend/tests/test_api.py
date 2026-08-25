@@ -24,15 +24,30 @@ def test_health_and_readiness_endpoints():
 
 
 def test_api_patients_flow():
-    res = client.get("/api/patients")
+    res = client.get("/api/patients?page=1&page_size=5")
     assert res.status_code == 200
-    patients = res.json()
-    assert len(patients) >= 3
+    data = res.json()
+    assert "items" in data
+    assert "total" in data
+    assert "page" in data
+    assert "page_size" in data
+    assert data["page"] == 1
+    assert len(data["items"]) >= 3
 
-    p0 = patients[0]
+    p0 = data["items"][0]
     res_single = client.get(f"/api/patients/{p0['id']}")
     assert res_single.status_code == 200
     assert res_single.json()["id"] == p0["id"]
+
+
+def test_api_fhir_servers_registry():
+    res = client.get("/api/patients/servers")
+    assert res.status_code == 200
+    servers = res.json()
+    assert "epic" in servers
+    assert "smart" in servers
+    assert "hapi" in servers
+    assert "r4.smarthealthit.org" in servers["smart"]["base_url"]
 
 
 def test_api_ur_evaluate_flow():

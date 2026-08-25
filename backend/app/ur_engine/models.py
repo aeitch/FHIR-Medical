@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 
 class UREvaluationRequest(BaseModel):
     patient_id: str
+    server: str | None = None
     expected_stay_hours: int | None = 48
     clinical_notes: str | None = None
 
