@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Header } from './components/Header';
 import { PatientSelector } from './components/PatientSelector';
 import { URDecisionCard } from './components/URDecisionCard';
@@ -57,6 +57,13 @@ export const App: React.FC = () => {
   const [showTechDetails, setShowTechDetails] = useState<boolean>(false);
   const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
 
+  // Multi-Server & Pagination State (Requirement 1 & 2)
+  const [selectedServer, setSelectedServer] = useState<string>('epic');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(5);
+  const [totalPatients, setTotalPatients] = useState<number>(5);
+  const [totalPages, setTotalPages] = useState<number>(1);
+
   const [finops, setFinOps] = useState<FinOpsSummary>({
     total_requests: 0,
     total_prompt_tokens: 0,
@@ -83,65 +90,6 @@ export const App: React.FC = () => {
     setCurrentPath(path);
   };
 
-  // Load initial patients on mount
-  useEffect(() => {
-    async function loadInitial() {
-      try {
-        setLoadingPatients(true);
-        const pts = await getPatients();
-        setPatients(pts);
-        if (pts.length > 0) {
-          setSelectedPatientId(pts[0].id);
-        }
-      } catch (err: unknown) {
-        console.error('Failed to load patients', err);
-        setError('Failed to connect to backend FHIR service.');
-      } finally {
-        setLoadingPatients(false);
-      }
-    }
-    loadInitial();
-    refreshAuditAndFinOps();
-  }, []);
-
-  // When selected patient changes, fetch details, run UR evaluation, and generate narrative
-  useEffect(() => {
-    if (!selectedPatientId) return;
-
-    async function loadPatientData() {
-      try {
-        setLoadingDetail(true);
-        setLoadingUR(true);
-        setError(null);
-
-        // Fetch detailed patient clinical data
-        const detail = await getPatientDetail(selectedPatientId);
-        setPatientDetail(detail);
-        setLoadingDetail(false);
-
-        // Run UR decision evaluation
-        const evalRes = await evaluateUR(selectedPatientId);
-        setEvaluation(evalRes);
-        setLoadingUR(false);
-
-        // Auto-trigger narrative generation
-        setLoadingNarrative(true);
-        const narrRes = await generateNarrative(selectedPatientId);
-        setNarrative(narrRes);
-        await refreshAuditAndFinOps();
-      } catch (err: unknown) {
-        console.error('Error during clinical evaluation', err);
-        setError('Error fetching patient data or evaluating clinical guidelines.');
-      } finally {
-        setLoadingDetail(false);
-        setLoadingUR(false);
-        setLoadingNarrative(false);
-      }
-    }
-
-    loadPatientData();
-  }, [selectedPatientId]);
-
   const refreshAuditAndFinOps = async () => {
     try {
       setLoadingAudit(true);
@@ -156,6 +104,71 @@ export const App: React.FC = () => {
     }
   };
 
+  const loadDirectory = useCallback(async (page: number, size: number, server: string) => {
+    try {
+      setLoadingPatients(true);
+      const res = await getPatients(page, size, server);
+      setPatients(res.items || []);
+      setTotalPatients(res.total || 0);
+      setTotalPages(res.total_pages || 1);
+      if (res.items && res.items.length > 0) {
+        setSelectedPatientId((prev) => {
+          const found = res.items.find((p) => p.id === prev);
+          return found ? prev : res.items[0].id;
+        });
+      }
+    } catch (err: unknown) {
+      console.error('Failed to load patient directory', err);
+      setError(`Failed to query patient directory from ${server.toUpperCase()}`);
+    } finally {
+      setLoadingPatients(false);
+    }
+  }, []);
+
+  // Load directory when server, page, or pageSize changes
+  useEffect(() => {
+    loadDirectory(currentPage, pageSize, selectedServer);
+    refreshAuditAndFinOps();
+  }, [currentPage, pageSize, selectedServer, loadDirectory]);
+
+  // When selected patient changes, fetch details, run UR evaluation, and generate narrative
+  useEffect(() => {
+    if (!selectedPatientId) return;
+
+    async function loadPatientData() {
+      try {
+        setLoadingDetail(true);
+        setLoadingUR(true);
+        setError(null);
+
+        // Fetch detailed patient clinical data from active server
+        const detail = await getPatientDetail(selectedPatientId, selectedServer);
+        setPatientDetail(detail);
+        setLoadingDetail(false);
+
+        // Run UR decision evaluation
+        const evalRes = await evaluateUR(selectedPatientId, 48, selectedServer);
+        setEvaluation(evalRes);
+        setLoadingUR(false);
+
+        // Auto-trigger narrative generation
+        setLoadingNarrative(true);
+        const narrRes = await generateNarrative(selectedPatientId, 'Medicare Advantage / Commercial', 'gemini-2.5-flash', selectedServer);
+        setNarrative(narrRes);
+        await refreshAuditAndFinOps();
+      } catch (err: unknown) {
+        console.error('Error during clinical evaluation', err);
+        setError('Error fetching patient data or evaluating clinical guidelines.');
+      } finally {
+        setLoadingDetail(false);
+        setLoadingUR(false);
+        setLoadingNarrative(false);
+      }
+    }
+
+    loadPatientData();
+  }, [selectedPatientId, selectedServer]);
+
   const handleGlobalRefresh = async () => {
     if (!selectedPatientId) return;
     try {
@@ -166,9 +179,9 @@ export const App: React.FC = () => {
       setNarrative(null);
 
       const [detail, evalRes, narrRes] = await Promise.all([
-        getPatientDetail(selectedPatientId),
-        evaluateUR(selectedPatientId),
-        generateNarrative(selectedPatientId),
+        getPatientDetail(selectedPatientId, selectedServer),
+        evaluateUR(selectedPatientId, 48, selectedServer),
+        generateNarrative(selectedPatientId, 'Medicare Advantage / Commercial', 'gemini-2.5-flash', selectedServer),
       ]);
       setPatientDetail(detail);
       setEvaluation(evalRes);
@@ -183,11 +196,21 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleCustomPatientFetch = async (patientId: string) => {
+  const handleServerChange = (newServer: string) => {
+    setSelectedServer(newServer);
+    setCurrentPage(1);
+    setSelectedPatientId('');
+    setPatientDetail(null);
+    setEvaluation(null);
+    setNarrative(null);
+  };
+
+  const handleCustomPatientFetch = async (patientId: string, server: string) => {
     setLoadingPatients(true);
     setError(null);
     try {
-      const fetched = await fetchPatientById(patientId, 'epic');
+      const fetched = await fetchPatientById(patientId, server);
+      // Add or replace in patient list if not already present
       setPatients((prev) => {
         const exists = prev.find((p) => p.id === fetched.id);
         if (!exists) return [fetched, ...prev];
@@ -195,7 +218,7 @@ export const App: React.FC = () => {
       });
       setSelectedPatientId(fetched.id);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Patient not found in sandbox';
+      const msg = err instanceof Error ? err.message : `Patient not found in ${server}`;
       setError(msg);
       throw err;
     } finally {
@@ -208,7 +231,7 @@ export const App: React.FC = () => {
     try {
       setLoadingNarrative(true);
       setError(null);
-      const narrRes = await generateNarrative(selectedPatientId, targetPayer, provider);
+      const narrRes = await generateNarrative(selectedPatientId, targetPayer, provider, selectedServer);
       setNarrative(narrRes);
       await refreshAuditAndFinOps();
     } catch (err: unknown) {
@@ -221,7 +244,7 @@ export const App: React.FC = () => {
 
   const handleRawJSONFetch = async () => {
     if (!selectedPatientId) return {};
-    return await getRawFHIRBundle(selectedPatientId);
+    return await getRawFHIRBundle(selectedPatientId, selectedServer);
   };
 
   if (currentPath === '/terms') {
@@ -258,13 +281,21 @@ export const App: React.FC = () => {
             loading={loadingUR || loadingNarrative}
           />
 
-          {/* 2. Patient Selector & Live Epic Search Bar (Requirement 3) */}
+          {/* 2. Patient Selector & Live Epic Search Bar (Requirement 1, 2, 3) */}
           <PatientSelector
             patients={patients}
             selectedId={selectedPatientId}
             onSelect={setSelectedPatientId}
             onFetchCustomPatient={handleCustomPatientFetch}
             loading={loadingPatients}
+            selectedServer={selectedServer}
+            onServerChange={handleServerChange}
+            page={currentPage}
+            pageSize={pageSize}
+            total={totalPatients}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
           />
 
           {/* 3. Executive CFO / Revenue Defense Card */}

@@ -32,6 +32,23 @@ export interface ClinicalDocument {
   description?: string;
 }
 
+export interface PaginatedPatientsResponse {
+  items: PatientSummary[];
+  page: number;
+  page_size: number;
+  total: number;
+  total_pages: number;
+  next_page: number | null;
+  server: string;
+}
+
+export interface FHIRServerInfo {
+  name: string;
+  base_url: string;
+  auth_type: string;
+  sample_ids: string[];
+}
+
 export interface PatientDetail extends PatientSummary {
   conditions?: ClinicalCondition[];
   observations?: ClinicalObservation[];
