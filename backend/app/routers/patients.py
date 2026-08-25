@@ -39,9 +39,11 @@ async def list_patients(
 
 from pydantic import BaseModel
 
+
 class PatientFetchRequest(BaseModel):
     patient_id: str
     provider: str | None = "epic"
+
 
 @router.post("/fetch")
 async def fetch_patient_by_id(payload: PatientFetchRequest, request: Request):
