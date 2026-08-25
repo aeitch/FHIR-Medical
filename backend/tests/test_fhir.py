@@ -19,8 +19,8 @@ async def test_get_patient_summary_fields():
     summary = await adapter.get_patient_summary("synthetic-pt-001")
     assert summary is not None
     assert summary.id == "synthetic-pt-001"
-    assert summary.mrn == "SYNTH-MRN-1001"
-    assert summary.gender == "male"
+    assert summary.mrn == "EPIC-ERXUFYUF"
+    assert summary.gender == "female"
     assert summary.age > 0
     assert len(summary.conditions) >= 1
     assert len(summary.observations) >= 2

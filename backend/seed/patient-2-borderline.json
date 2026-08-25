@@ -11,19 +11,19 @@
         "identifier": [
           {
             "system": "http://hospital.demo.org/mrn",
-            "value": "SYNTH-MRN-1002"
+            "value": "EPIC-EQ081-VQ"
           }
         ],
         "active": true,
         "name": [
           {
             "use": "official",
-            "family": "Chen",
-            "given": ["Linda", "M."]
+            "family": "Lin",
+            "given": ["Derrick"]
           }
         ],
-        "gender": "female",
-        "birthDate": "1972-09-18"
+        "gender": "male",
+        "birthDate": "1973-09-18"
       }
     },
     {
@@ -39,7 +39,7 @@
         },
         "subject": {
           "reference": "Patient/synthetic-pt-002",
-          "display": "Linda M. Chen"
+          "display": "Derrick Lin"
         },
         "period": {
           "start": "2026-08-25T02:15:00Z"
@@ -150,7 +150,7 @@
           "reference": "Patient/synthetic-pt-002"
         },
         "date": "2026-08-25T03:30:00Z",
-        "description": "53yo F with single syncopal event while gardening. Normal EKG, negative serial troponins, hemodynamically stable. Observation status indicated for 12-24 hours telemetry."
+        "description": "53yo M with single syncopal event while gardening. Normal EKG, negative serial troponins, hemodynamically stable. Observation status indicated for 12-24 hours telemetry."
       }
     }
   ]

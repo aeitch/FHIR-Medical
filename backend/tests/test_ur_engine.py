@@ -8,7 +8,7 @@ async def test_inpatient_evaluation_heart_failure():
     adapter = LocalFixtureFHIRAdapter()
     patient = await adapter.get_patient_summary("synthetic-pt-001")
     assert patient is not None
-    assert patient.full_name == "James R. Miller"
+    assert patient.full_name == "Camila Lopez"
 
     evaluation = UREngine.evaluate(patient, expected_hours=48)
     assert evaluation.recommended_status == "inpatient"
@@ -24,7 +24,7 @@ async def test_observation_evaluation_syncope():
     adapter = LocalFixtureFHIRAdapter()
     patient = await adapter.get_patient_summary("synthetic-pt-002")
     assert patient is not None
-    assert patient.full_name == "Linda M. Chen"
+    assert patient.full_name == "Derrick Lin"
 
     evaluation = UREngine.evaluate(patient, expected_hours=24)
     assert evaluation.recommended_status == "observation"
@@ -39,7 +39,7 @@ async def test_inpatient_evaluation_copd_hypercapnia():
     adapter = LocalFixtureFHIRAdapter()
     patient = await adapter.get_patient_summary("synthetic-pt-003")
     assert patient is not None
-    assert patient.full_name == "Robert E. Davis"
+    assert patient.full_name == "Jason R. Miller"
 
     evaluation = UREngine.evaluate(patient, expected_hours=48)
     assert evaluation.recommended_status == "inpatient"

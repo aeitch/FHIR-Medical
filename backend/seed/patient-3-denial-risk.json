@@ -11,15 +11,15 @@
         "identifier": [
           {
             "system": "http://hospital.demo.org/mrn",
-            "value": "SYNTH-MRN-1003"
+            "value": "EPIC-EGQBHVFQ"
           }
         ],
         "active": true,
         "name": [
           {
             "use": "official",
-            "family": "Davis",
-            "given": ["Robert", "E."]
+            "family": "Miller",
+            "given": ["Jason", "R."]
           }
         ],
         "gender": "male",
@@ -39,10 +39,10 @@
         },
         "subject": {
           "reference": "Patient/synthetic-pt-003",
-          "display": "Robert E. Davis"
+          "display": "Jason R. Miller"
         },
         "period": {
-          "start": "2026-08-23T14:00:00Z"
+          "start": "2026-08-25T14:00:00Z"
         },
         "reasonCode": [
           {
@@ -114,7 +114,7 @@
         "subject": {
           "reference": "Patient/synthetic-pt-003"
         },
-        "effectiveDateTime": "2026-08-23T14:30:00Z",
+        "effectiveDateTime": "2026-08-25T14:30:00Z",
         "valueQuantity": {
           "value": 54,
           "unit": "mm[Hg]",
@@ -149,7 +149,7 @@
         "subject": {
           "reference": "Patient/synthetic-pt-003"
         },
-        "date": "2026-08-23T16:00:00Z",
+        "date": "2026-08-25T16:00:00Z",
         "description": "74yo M with severe wheezing, accessory muscle use, and PaCO2 54. Placed on BiPAP and IV Solu-Medrol. High payer denial risk due to ambiguous documentation on baseline home oxygen versus acute escalation."
       }
     }

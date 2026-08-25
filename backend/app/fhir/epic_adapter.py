@@ -78,20 +78,35 @@ class EpicFHIRAdapter(BaseFHIRAdapter):
 
         # If live Epic sandbox network call is unreachable or auth-gated, return configured sandbox profiles
         if not patients:
-            for item in self.KNOWN_EPIC_TEST_PATIENTS:
-                patients.append(
-                    {
-                        "id": item["id"],
-                        "mrn": f"EPIC-{item['id'][:8].upper()}",
-                        "name": item["label"].split(": ")[1].split(" (")[0],
-                        "gender": "male" if "Jason" in item["label"] or "Derrick" in item["label"] else "female",
-                        "birthDate": "1965-05-20",
-                        "age": 61,
-                        "scenario": item["label"],
-                        "encounter_class": "inpatient encounter",
-                        "provenance": "Epic on FHIR Sandbox Profile",
-                    }
-                )
+            from backend.app.fhir.local_adapter import LocalFixtureFHIRAdapter
+
+            adapter = LocalFixtureFHIRAdapter()
+            epic_seeds = [
+                ("erXuFYUfucBZaryVpgxafgw3", "synthetic-pt-001"),
+                ("eq081-VQEgP8FsSTUDALVUQ3", "synthetic-pt-002"),
+                ("egqBHVfQCU3FAoDRSmkeKzg3", "synthetic-pt-003"),
+            ]
+            for epic_id, seed_id in epic_seeds:
+                s = await adapter.get_patient_summary(seed_id)
+                if s:
+                    enc_class = (
+                        s.active_encounter.get("class", {}).get("display", "inpatient encounter")
+                        if s.active_encounter
+                        else "inpatient encounter"
+                    )
+                    patients.append(
+                        {
+                            "id": epic_id,
+                            "mrn": s.mrn,
+                            "name": s.full_name,
+                            "gender": s.gender,
+                            "birthDate": s.birth_date,
+                            "age": s.age,
+                            "scenario": f"Epic Sandbox: {s.full_name} ({s.scenario_description[:40]}...)",
+                            "encounter_class": enc_class,
+                            "provenance": "Epic on FHIR Sandbox Profile",
+                        }
+                    )
 
         return patients
 

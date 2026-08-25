@@ -11,18 +11,18 @@
         "identifier": [
           {
             "system": "http://hospital.demo.org/mrn",
-            "value": "SYNTH-MRN-1001"
+            "value": "EPIC-ERXUFYUF"
           }
         ],
         "active": true,
         "name": [
           {
             "use": "official",
-            "family": "Miller",
-            "given": ["James", "R."]
+            "family": "Lopez",
+            "given": ["Camila"]
           }
         ],
-        "gender": "male",
+        "gender": "female",
         "birthDate": "1958-04-12"
       }
     },
@@ -39,10 +39,10 @@
         },
         "subject": {
           "reference": "Patient/synthetic-pt-001",
-          "display": "James R. Miller"
+          "display": "Camila Lopez"
         },
         "period": {
-          "start": "2026-08-24T08:30:00Z"
+          "start": "2026-08-25T08:30:00Z"
         },
         "reasonCode": [
           {
@@ -124,7 +124,7 @@
         "subject": {
           "reference": "Patient/synthetic-pt-001"
         },
-        "effectiveDateTime": "2026-08-24T09:15:00Z",
+        "effectiveDateTime": "2026-08-25T09:15:00Z",
         "valueQuantity": {
           "value": 7840,
           "unit": "pg/mL",
@@ -169,7 +169,7 @@
         "subject": {
           "reference": "Patient/synthetic-pt-001"
         },
-        "effectiveDateTime": "2026-08-24T08:45:00Z",
+        "effectiveDateTime": "2026-08-25T08:45:00Z",
         "valueQuantity": {
           "value": 88,
           "unit": "%",
@@ -197,8 +197,8 @@
         "subject": {
           "reference": "Patient/synthetic-pt-001"
         },
-        "date": "2026-08-24T10:00:00Z",
-        "description": "68yo M with severe dyspnea at rest, orthopnea, bilateral 3+ lower extremity edema. Requires IV Bumex drip and telemetry monitoring. Expected hospital stay > 2 midnights."
+        "date": "2026-08-25T10:00:00Z",
+        "description": "68yo F with severe dyspnea at rest, orthopnea, bilateral 3+ lower extremity edema. Requires IV Bumex drip and telemetry monitoring. Expected hospital stay > 2 midnights."
       }
     }
   ]
