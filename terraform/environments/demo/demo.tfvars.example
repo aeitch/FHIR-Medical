@@ -1,7 +1,7 @@
 # Example Terraform Variables for ClinEfficiency UR Console Demo (GCP)
 # Rename to demo.tfvars for custom deployment (NEVER commit secrets to version control)
 
-project_id     = "platinum-factor-489721-f0"
+project_id     = "parkkaro-prod"
 region         = "us-central1"
 prefix         = "clinefficiency"
 subnet_cidr    = "10.0.0.0/24"
