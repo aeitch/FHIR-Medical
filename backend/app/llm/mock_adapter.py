@@ -19,7 +19,9 @@ class MockLLMAdapter(BaseLLMAdapter):
         pid = patient_summary.get("id", "synthetic-pt-001")
         name = patient_summary.get("full_name", "Patient")
 
-        if "001" in pid:
+        conditions_str = str(patient_summary.get("conditions", [])).lower()
+
+        if "001" in pid or "erxu" in pid.lower() or "heart" in conditions_str or "chf" in conditions_str:
             narrative = (
                 f"APPEAL & MEDICAL NECESSITY JUSTIFICATION for {name}:\n\n"
                 f"The patient presented with acute decompensated systolic heart failure with severe pulmonary congestion, "
@@ -34,7 +36,7 @@ class MockLLMAdapter(BaseLLMAdapter):
                 "AHA/ACC Heart Failure Inpatient Criteria",
             ]
             rationale = "Severity of illness and intensity of IV therapy necessitate inpatient level of care."
-        elif "002" in pid:
+        elif "002" in pid or "eq081" in pid.lower() or "syncope" in conditions_str:
             narrative = (
                 f"UTILIZATION REVIEW CLINICAL SUMMARY for {name}:\n\n"
                 f"The patient was evaluated following an isolated syncopal episode. Serial cardiac troponins remained negative (0.01 ng/mL) "
