@@ -8,6 +8,11 @@ import { FinOpsWidget } from './components/FinOpsWidget';
 import { AuditLogViewer } from './components/AuditLogViewer';
 import { EvidenceViewer } from './components/EvidenceViewer';
 import { CFOOnePager } from './components/CFOOnePager';
+import { DenialRiskGauge } from './components/DenialRiskGauge';
+import { RevenueBarChart } from './components/RevenueBarChart';
+import { TwoMidnightRing } from './components/TwoMidnightRing';
+import { AuditActivityChart } from './components/AuditActivityChart';
+import { HeroCaseSpotlight } from './components/HeroCaseSpotlight';
 import { TermsPage } from './components/TermsPage';
 import {
   PatientSummary,
@@ -50,6 +55,7 @@ export const App: React.FC = () => {
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
   const [activeTab, setActiveTab] = useState<DossierTab>('decision');
   const [showTechDetails, setShowTechDetails] = useState<boolean>(false);
+  const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
 
   const [finops, setFinOps] = useState<FinOpsSummary>({
     total_requests: 0,
@@ -77,7 +83,7 @@ export const App: React.FC = () => {
     setCurrentPath(path);
   };
 
-  // Load initial patients
+  // Load initial patients on mount
   useEffect(() => {
     async function loadInitial() {
       try {
@@ -142,10 +148,31 @@ export const App: React.FC = () => {
       const [logs, metrics] = await Promise.all([getAuditLogs(15), getFinOpsMetrics()]);
       setAuditLogs(logs);
       setFinOps(metrics);
+      setLastRefreshed(new Date());
     } catch (err) {
       console.error('Error fetching audit logs', err);
     } finally {
       setLoadingAudit(false);
+    }
+  };
+
+  const handleGlobalRefresh = async () => {
+    if (!selectedPatientId) return;
+    try {
+      setLoadingUR(true);
+      setLoadingNarrative(true);
+      const [evalRes, narrRes] = await Promise.all([
+        evaluateUR(selectedPatientId),
+        generateNarrative(selectedPatientId),
+      ]);
+      setEvaluation(evalRes);
+      setNarrative(narrRes);
+      await refreshAuditAndFinOps();
+    } catch (err) {
+      console.error('Error during global refresh', err);
+    } finally {
+      setLoadingUR(false);
+      setLoadingNarrative(false);
     }
   };
 
@@ -154,7 +181,6 @@ export const App: React.FC = () => {
     setError(null);
     try {
       const fetched = await fetchPatientById(patientId, 'epic');
-      // Add or replace in patient list if not already present
       setPatients((prev) => {
         const exists = prev.find((p) => p.id === fetched.id);
         if (!exists) return [fetched, ...prev];
@@ -216,7 +242,16 @@ export const App: React.FC = () => {
             </div>
           )}
 
-          {/* 1. Patient Selector & Live Epic Search */}
+          {/* 1. Reframed Client Story Hero Case Spotlight (Requirement 8 & 10) */}
+          <HeroCaseSpotlight
+            patient={patientDetail}
+            evaluation={evaluation}
+            lastRefreshed={lastRefreshed}
+            onRefresh={handleGlobalRefresh}
+            loading={loadingUR || loadingNarrative}
+          />
+
+          {/* 2. Patient Selector & Live Epic Search Bar (Requirement 3) */}
           <PatientSelector
             patients={patients}
             selectedId={selectedPatientId}
@@ -225,10 +260,10 @@ export const App: React.FC = () => {
             loading={loadingPatients}
           />
 
-          {/* 2. Executive CFO / Revenue Defense Card */}
+          {/* 3. Executive CFO / Revenue Defense Card */}
           <CFOOnePager evaluation={evaluation} patientName={activePatientName} />
 
-          {/* 3. Auditor-Grade Dossier Navigation Tabs */}
+          {/* 4. Auditor-Grade Dossier Navigation Tabs */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="border-b border-slate-200 bg-slate-50/70 px-4 flex flex-wrap gap-1">
               <button
@@ -240,7 +275,7 @@ export const App: React.FC = () => {
                 }`}
               >
                 <ShieldCheck className="w-4 h-4" />
-                <span>Level-of-Care Decision</span>
+                <span>Level-of-Care Decision & Charts</span>
               </button>
 
               <button
@@ -295,7 +330,14 @@ export const App: React.FC = () => {
             {/* Tab Content Panes */}
             <div className="p-4 sm:p-6">
               {activeTab === 'decision' && (
-                <div className="space-y-4">
+                <div className="space-y-6">
+                  {/* Visual Charts Grid: Denial Risk Gauge + Two Midnight Donut + Revenue Bars */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <DenialRiskGauge evaluation={evaluation} />
+                    <TwoMidnightRing evaluation={evaluation} />
+                    <RevenueBarChart evaluation={evaluation} />
+                  </div>
+
                   <URDecisionCard evaluation={evaluation} loading={loadingUR} />
                 </div>
               )}
@@ -321,12 +363,15 @@ export const App: React.FC = () => {
               )}
 
               {activeTab === 'audit' && (
-                <AuditLogViewer logs={patientSpecificLogs} loading={loadingAudit} />
+                <div className="space-y-5">
+                  <AuditActivityChart logs={patientSpecificLogs} />
+                  <AuditLogViewer logs={patientSpecificLogs} loading={loadingAudit} />
+                </div>
               )}
             </div>
           </div>
 
-          {/* 4. FinOps Demo Tracker & Refresh */}
+          {/* 5. FinOps Demo Tracker & Refresh */}
           <div className="space-y-2">
             <div className="flex justify-end">
               <button
@@ -341,7 +386,7 @@ export const App: React.FC = () => {
             <FinOpsWidget metrics={finops} />
           </div>
 
-          {/* 5. Collapsible Technical & Interoperability Details (Clean UX) */}
+          {/* 6. Collapsible Technical & Interoperability Details */}
           <div className="border border-slate-200 bg-white rounded-xl p-4 shadow-sm">
             <button
               onClick={() => setShowTechDetails(!showTechDetails)}

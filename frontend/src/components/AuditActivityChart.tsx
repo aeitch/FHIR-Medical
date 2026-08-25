@@ -40,7 +40,7 @@ export const AuditActivityChart: React.FC<Props> = ({ logs }) => {
             <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#64748b' }} />
             <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: '#64748b' }} />
             <Tooltip
-              formatter={(value: number) => [`${value} events`, 'Logged']}
+              formatter={(value: unknown) => [`${Number(value || 0)} events`, 'Logged']}
               contentStyle={{ backgroundColor: '#0f172a', borderRadius: '8px', border: 'none', color: '#fff', fontSize: '11px' }}
             />
             <Bar dataKey="count" radius={[4, 4, 0, 0]} barSize={24}>

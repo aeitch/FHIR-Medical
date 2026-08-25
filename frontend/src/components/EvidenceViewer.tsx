@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Database, Activity, FileCode, CheckCircle, ChevronDown, ChevronUp, Copy, Check } from 'lucide-react';
 import { PatientDetail } from '../types';
+import { LOINCReferenceBars } from './LOINCReferenceBars';
 
 interface Props {
   patient: PatientDetail | null;
@@ -94,46 +95,13 @@ export const EvidenceViewer: React.FC<Props> = ({ patient, loading, onViewRawJSO
           </div>
         </div>
 
-        {/* 2. Measured Vitals & Laboratory Findings (LOINC) */}
-        <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
+        {/* 2. Measured Vitals & Laboratory Findings (LOINC Visual Gauge Bars) */}
+        <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-3">
           <div className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
             <CheckCircle className="w-4 h-4 text-teal-600" />
-            <span>Laboratory Biomarkers & Vitals (LOINC)</span>
+            <span>LOINC Biomarkers vs Reference Range</span>
           </div>
-          <div className="space-y-2 pt-1">
-            {patient.observations && patient.observations.length > 0 ? (
-              patient.observations.map((obs, idx) => {
-                const coding = obs.code?.coding?.[0] || {};
-                const name = coding.display || obs.code?.text || 'Observation';
-                const val = obs.valueQuantity?.value;
-                const unit = obs.valueQuantity?.unit || obs.valueQuantity?.code || '';
-                return (
-                  <div key={idx} className="bg-white p-2.5 rounded-md border border-slate-200 text-xs flex items-center justify-between">
-                    <div>
-                      <div className="font-semibold text-slate-900">{name}</div>
-                      <div className="text-[11px] text-slate-500 font-mono mt-0.5">
-                        <span className="bg-slate-100 px-1.5 py-0.5 rounded text-teal-700">
-                          LOINC: {coding.code || 'N/A'}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-right font-mono">
-                      <div className="text-sm font-bold text-slate-900">
-                        {val !== undefined ? `${val} ${unit}` : 'Recorded'}
-                      </div>
-                      {obs.referenceRange?.[0]?.high && (
-                        <div className="text-[10px] text-slate-400">
-                          Ref: &lt; {obs.referenceRange[0].high.value} {obs.referenceRange[0].high.unit}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="text-xs text-slate-500 italic">No LOINC observations recorded.</div>
-            )}
-          </div>
+          <LOINCReferenceBars observations={patient.observations || []} />
         </div>
       </div>
 

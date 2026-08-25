@@ -27,20 +27,14 @@ export const DenialRiskGauge: React.FC<Props> = ({ evaluation }) => {
 
   // Determine color and status
   let riskLevel = 'Low Denial Risk';
-  let riskColor = '#10b981'; // green
   let riskBg = 'bg-emerald-50 text-emerald-800 border-emerald-200';
-  let needleRotation = -60; // -90 to +90 degrees
 
   if (riskScore > 65) {
     riskLevel = 'High Denial Risk (Audit Target)';
-    riskColor = '#f43f5e'; // rose/red
     riskBg = 'bg-rose-50 text-rose-800 border-rose-200';
-    needleRotation = 60;
   } else if (riskScore > 30) {
     riskLevel = 'Moderate Denial Risk (Requires Review)';
-    riskColor = '#f59e0b'; // amber
     riskBg = 'bg-amber-50 text-amber-800 border-amber-200';
-    needleRotation = 0;
   }
 
   // Calculate needle angle based on risk score (0 to 100 -> -80 to +80 deg)

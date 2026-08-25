@@ -41,7 +41,7 @@ export const RevenueBarChart: React.FC<Props> = ({ evaluation }) => {
             <XAxis type="number" tickFormatter={(v) => `$${v / 1000}k`} tick={{ fontSize: 10, fill: '#64748b' }} />
             <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: '#334155', fontWeight: 600 }} width={110} />
             <Tooltip
-              formatter={(value: number) => [`$${value.toLocaleString()}`, 'Reimbursement']}
+              formatter={(value: unknown) => [`$${Number(value || 0).toLocaleString()}`, 'Reimbursement']}
               contentStyle={{ backgroundColor: '#0f172a', borderRadius: '8px', border: 'none', color: '#fff', fontSize: '11px' }}
             />
             <Bar dataKey="amount" radius={[0, 4, 4, 0]} barSize={18}>
