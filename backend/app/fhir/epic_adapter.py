@@ -147,12 +147,15 @@ class EpicFHIRAdapter(BaseFHIRAdapter):
             "erXuFYUfucBZaryVpgxafgw3": "synthetic-pt-001",
             "eq081-VQEgP8FsSTUDALVUQ3": "synthetic-pt-002",
             "egqBHVfQCU3FAoDRSmkeKzg3": "synthetic-pt-003",
+            "synthetic-pt-001": "synthetic-pt-001",
+            "synthetic-pt-002": "synthetic-pt-002",
+            "synthetic-pt-003": "synthetic-pt-003",
         }
         target_seed = fallback_map.get(patient_id, "synthetic-pt-001")
         summary = await LocalFixtureFHIRAdapter().get_patient_summary(target_seed)
         if summary:
             summary.id = patient_id
-            summary.scenario_description = f"Epic Sandbox Mapped: {summary.scenario_description}"
+            summary.scenario_description = f"Epic FHIR R4: {summary.scenario_description}"
         return summary
 
     async def get_raw_bundle(self, patient_id: str) -> dict[str, Any] | None:
