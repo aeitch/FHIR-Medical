@@ -1,7 +1,7 @@
 import logging
 
 from backend.app.audit.middleware import CorrelationIdMiddleware
-from backend.app.routers import audit, health, narrative, patients, smart, ur
+from backend.app.routers import audit, fhir_metadata, health, narrative, patients, smart, ur
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -20,9 +20,18 @@ app = FastAPI(
 )
 
 # CORS Configuration
+ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:5173",
+    "https://clinefficiency-frontend-256461781819.us-central1.run.app",
+    "https://clinefficiency-frontend-ryrty7jjta-uc.a.run.app",
+    "*",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -31,13 +40,17 @@ app.add_middleware(
 # End-to-End Tracing Middleware
 app.add_middleware(CorrelationIdMiddleware)
 
-# Mount Routers
+# Root level routes (Liveness and SMART OAuth)
 app.include_router(health.router)
 app.include_router(smart.router)
-app.include_router(patients.router, prefix="/api")
-app.include_router(ur.router, prefix="/api")
-app.include_router(narrative.router, prefix="/api")
-app.include_router(audit.router, prefix="/api")
+
+# Versioned Routes: Mount under both /api and /api/v1
+for prefix in ["/api", "/api/v1"]:
+    app.include_router(patients.router, prefix=prefix)
+    app.include_router(ur.router, prefix=prefix)
+    app.include_router(narrative.router, prefix=prefix)
+    app.include_router(audit.router, prefix=prefix)
+    app.include_router(fhir_metadata.router, prefix=prefix)
 
 if __name__ == "__main__":
     import uvicorn

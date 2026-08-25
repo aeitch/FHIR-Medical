@@ -37,6 +37,33 @@ async def list_patients(
     return patients
 
 
+from pydantic import BaseModel
+
+class PatientFetchRequest(BaseModel):
+    patient_id: str
+    provider: str | None = "epic"
+
+@router.post("/fetch")
+async def fetch_patient_by_id(payload: PatientFetchRequest, request: Request):
+    """Dynamically fetch an arbitrary patient chart by ID from Epic or target FHIR store."""
+    corr_id = getattr(request.state, "correlation_id", "local")
+    adapter = get_adapter(payload.provider)
+    summary = await adapter.get_patient_summary(payload.patient_id.strip())
+    if not summary:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Patient '{payload.patient_id}' was not found in the {payload.provider or 'Epic'} FHIR repository.",
+        )
+
+    await audit_logger.log_event(
+        action="FHIR_PATIENT_FETCHED",
+        patient_id=payload.patient_id,
+        correlation_id=corr_id,
+        details={"provider": payload.provider or "epic", "dynamic_fetch": True},
+    )
+    return summary
+
+
 @router.get("/{patient_id}")
 async def get_patient(
     patient_id: str,
@@ -57,3 +84,24 @@ async def get_patient(
         details={"provider": provider or "default"},
     )
     return summary
+
+
+@router.get("/{patient_id}/raw")
+async def get_raw_fhir_bundle(
+    patient_id: str,
+    request: Request,
+    provider: str | None = Query(None, description="FHIR provider: 'epic', 'gcp_healthcare', or 'local'"),
+):
+    """Retrieve raw HL7 FHIR R4 JSON bundle for clinical auditor verification."""
+    corr_id = getattr(request.state, "correlation_id", "local")
+    adapter = get_adapter(provider)
+    bundle = await adapter.get_raw_bundle(patient_id)
+    if not bundle:
+        raise HTTPException(status_code=404, detail=f"Raw FHIR bundle for patient {patient_id} not found")
+
+    await audit_logger.log_event(
+        action="FHIR_RAW_BUNDLE_INSPECTED",
+        patient_id=patient_id,
+        correlation_id=corr_id,
+    )
+    return bundle
