@@ -72,7 +72,7 @@ class MockLLMAdapter(BaseLLMAdapter):
             narrative_text=narrative,
             criteria_cited=cited,
             clinical_rationale=rationale,
-            model_used="gemini-2.5-flash (simulated)",
+            model_used="Deterministic Clinical Template",
             prompt_tokens=prompt_tokens,
             completion_tokens=completion_tokens,
             estimated_cost_usd=cost,

@@ -71,7 +71,9 @@ class VertexAIGeminiAdapter(BaseLLMAdapter):
             )
             from backend.app.llm.mock_adapter import MockLLMAdapter
 
-            return await MockLLMAdapter().generate_narrative(patient_summary, ur_decision, target_payer, correlation_id)
+            fallback_res = await MockLLMAdapter().generate_narrative(patient_summary, ur_decision, target_payer, correlation_id)
+            fallback_res.model_used = "Deterministic Clinical Template (Offline Fallback)"
+            return fallback_res
 
         latency = round((time.time() - start_time) * 1000, 2)
         cost = CostCalculator.calculate_cost(self.model_name, prompt_tokens, completion_tokens)
@@ -84,7 +86,7 @@ class VertexAIGeminiAdapter(BaseLLMAdapter):
                 "clinical_rationale",
                 "Inpatient admission justified based on severity of illness and intensity of service.",
             ),
-            model_used=self.model_name,
+            model_used=f"Vertex AI ({self.model_name})",
             prompt_tokens=prompt_tokens,
             completion_tokens=completion_tokens,
             estimated_cost_usd=cost,
