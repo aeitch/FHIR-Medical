@@ -28,9 +28,9 @@ export const PatientSelector: React.FC<Props> = ({ patients, selectedId, onSelec
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <User className="w-4 h-4 text-teal-600" />
-          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Select Synthetic FHIR Patient</h2>
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Select Dynamic FHIR Patient</h2>
         </div>
-        <span className="text-xs text-slate-500">Synthea R4 Standard Fixtures</span>
+        <span className="text-xs text-slate-500">Live FHIR R4 Repository Integration</span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">

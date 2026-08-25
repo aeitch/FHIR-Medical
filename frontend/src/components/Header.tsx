@@ -27,11 +27,11 @@ export const Header: React.FC = () => {
         <div className="flex items-center gap-2 self-start sm:self-auto">
           <div className="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-md text-xs font-medium text-slate-700">
             <Sparkles className="w-3.5 h-3.5 text-teal-600" />
-            <span>Vertex AI: gemini-2.5-flash</span>
+            <span>AI Narrative: Vertex AI</span>
           </div>
           <div className="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-md text-xs font-medium text-slate-700">
             <Cpu className="w-3.5 h-3.5 text-slate-600" />
-            <span>GCP Healthcare FHIR R4</span>
+            <span>EHR Store: HL7 FHIR R4</span>
           </div>
         </div>
       </div>

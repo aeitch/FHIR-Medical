@@ -7,6 +7,7 @@ export interface PatientSummary {
   age: number;
   scenario: string;
   encounter_class?: string;
+  provenance?: string;
 }
 
 export interface UREvaluation {
