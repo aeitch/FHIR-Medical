@@ -79,18 +79,23 @@ class AuditLogger:
         return self._in_memory_logs[:limit]
 
     async def get_finops_summary(self) -> dict[str, Any]:
+        total_requests = len(self._in_memory_logs)
         narrative_logs = [l for l in self._in_memory_logs if l.get("action") == "NARRATIVE_GENERATED"]
-        total_requests = len(narrative_logs)
         total_prompt = sum(l.get("prompt_tokens", 0) for l in narrative_logs)
         total_completion = sum(l.get("completion_tokens", 0) for l in narrative_logs)
         total_cost = sum(l.get("cost_usd", 0.0) for l in narrative_logs)
 
+        latencies = [
+            l.get("details", {}).get("latency_ms") for l in narrative_logs if l.get("details", {}).get("latency_ms")
+        ]
+        avg_latency = round(sum(latencies) / len(latencies), 1) if latencies else 320.0
+
         return {
-            "total_requests": total_requests,
+            "total_requests": max(total_requests, len(narrative_logs)),
             "total_prompt_tokens": total_prompt,
             "total_completion_tokens": total_completion,
             "total_cost_usd": round(total_cost, 6),
-            "average_latency_ms": 320.0,
+            "average_latency_ms": avg_latency,
         }
 
 

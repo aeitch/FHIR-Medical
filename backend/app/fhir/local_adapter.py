@@ -109,9 +109,17 @@ class LocalFixtureFHIRAdapter(BaseFHIRAdapter):
                         "encounter_class": summary.active_encounter.get("class", {}).get("display", "Inpatient")
                         if summary.active_encounter
                         else "Inpatient",
+                        "provenance": "Offline Synthea Seed Store",
                     }
                 )
         return patients
+
+    async def list_patients_paginated(self, page: int = 1, page_size: int = 10) -> tuple[list[dict[str, Any]], int]:
+        all_patients = await self.list_patients()
+        total = len(all_patients)
+        start = (page - 1) * page_size
+        end = start + page_size
+        return all_patients[start:end], total
 
     async def get_patient_summary(self, patient_id: str) -> PatientSummary | None:
         if not self.seed_dir.exists():

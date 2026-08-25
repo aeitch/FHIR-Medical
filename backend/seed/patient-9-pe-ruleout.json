@@ -1,0 +1,66 @@
+{
+  "resourceType": "Bundle",
+  "id": "synthetic-pt-009-bundle",
+  "type": "collection",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:patient-009",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "synthetic-pt-009",
+        "identifier": [{ "system": "http://hospital.demo.org/mrn", "value": "EPIC-VS420" }],
+        "active": true,
+        "name": [{ "use": "official", "family": "Sterling", "given": ["Victoria"] }],
+        "gender": "female",
+        "birthDate": "1984-04-10"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:encounter-009",
+      "resource": {
+        "resourceType": "Encounter",
+        "id": "enc-009",
+        "status": "in-progress",
+        "class": { "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode", "code": "OBSENC", "display": "observation encounter" },
+        "subject": { "reference": "Patient/synthetic-pt-009", "display": "Victoria Sterling" },
+        "period": { "start": "2026-08-25T12:00:00Z" },
+        "reasonCode": [{ "coding": [{ "system": "http://snomed.info/sct", "code": "29857009", "display": "Chest pain" }], "text": "Pleuritic Chest Pain / Pulmonary Embolism Rule-Out" }]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:condition-009",
+      "resource": {
+        "resourceType": "Condition",
+        "id": "cond-009",
+        "clinicalStatus": { "coding": [{ "system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active" }] },
+        "code": { "coding": [{ "system": "http://hl7.org/fhir/sid/icd-10-cm", "code": "R07.1", "display": "Chest pain on breathing" }], "text": "Pleuritic Chest Pain with Low Wells Score" },
+        "subject": { "reference": "Patient/synthetic-pt-009" }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:obs-010",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-010",
+        "status": "final",
+        "code": { "coding": [{ "system": "http://loinc.org", "code": "48065-7", "display": "Fibrin D-dimer DDU [Mass/volume] in Platelet poor plasma" }] },
+        "subject": { "reference": "Patient/synthetic-pt-009" },
+        "effectiveDateTime": "2026-08-25T12:30:00Z",
+        "valueQuantity": { "value": 240, "unit": "ng/mL", "system": "http://unitsofmeasure.org", "code": "ng/mL" },
+        "referenceRange": [{ "high": { "value": 500, "unit": "ng/mL" } }]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:docref-009",
+      "resource": {
+        "resourceType": "DocumentReference",
+        "id": "doc-009",
+        "status": "current",
+        "type": { "coding": [{ "system": "http://loinc.org", "code": "34117-2", "display": "Observation Note" }] },
+        "subject": { "reference": "Patient/synthetic-pt-009" },
+        "date": "2026-08-25T13:00:00Z",
+        "description": "42yo F presenting with pleuritic chest pain after long flight. Wells score 1.5 (low risk). Negative D-Dimer (< 250 ng/mL), normal CTA chest negative for pulmonary embolism. Observation status indicated for 12-24 hours."
+      }
+    }
+  ]
+}

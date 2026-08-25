@@ -1,0 +1,65 @@
+{
+  "resourceType": "Bundle",
+  "id": "synthetic-pt-007-bundle",
+  "type": "collection",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:patient-007",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "synthetic-pt-007",
+        "identifier": [{ "system": "http://hospital.demo.org/mrn", "value": "EPIC-ER340" }],
+        "active": true,
+        "name": [{ "use": "official", "family": "Rostova", "given": ["Elena"] }],
+        "gender": "female",
+        "birthDate": "1992-08-19"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:encounter-007",
+      "resource": {
+        "resourceType": "Encounter",
+        "id": "enc-007",
+        "status": "in-progress",
+        "class": { "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode", "code": "OBSENC", "display": "observation encounter" },
+        "subject": { "reference": "Patient/synthetic-pt-007", "display": "Elena Rostova" },
+        "period": { "start": "2026-08-25T08:00:00Z" },
+        "reasonCode": [{ "coding": [{ "system": "http://snomed.info/sct", "code": "195967001", "display": "Asthma" }], "text": "Acute Moderate Asthma Exacerbation" }]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:condition-007",
+      "resource": {
+        "resourceType": "Condition",
+        "id": "cond-007",
+        "clinicalStatus": { "coding": [{ "system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active" }] },
+        "code": { "coding": [{ "system": "http://hl7.org/fhir/sid/icd-10-cm", "code": "J45.41", "display": "Moderate persistent asthma with (acute) exacerbation" }], "text": "Moderate Asthma Exacerbation Responsive to Bronchodilators" },
+        "subject": { "reference": "Patient/synthetic-pt-007" }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:obs-008",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-008",
+        "status": "final",
+        "code": { "coding": [{ "system": "http://loinc.org", "code": "2708-6", "display": "Oxygen saturation in Arterial blood" }] },
+        "subject": { "reference": "Patient/synthetic-pt-007" },
+        "effectiveDateTime": "2026-08-25T08:30:00Z",
+        "valueQuantity": { "value": 94, "unit": "%", "system": "http://unitsofmeasure.org", "code": "%" }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:docref-007",
+      "resource": {
+        "resourceType": "DocumentReference",
+        "id": "doc-007",
+        "status": "current",
+        "type": { "coding": [{ "system": "http://loinc.org", "code": "34117-2", "display": "Observation Note" }] },
+        "subject": { "reference": "Patient/synthetic-pt-007" },
+        "date": "2026-08-25T09:00:00Z",
+        "description": "34yo F presenting with wheezing and chest tightness. Improved significantly following 3 duo-neb treatments. Peak flow improved from 55% to 75% of baseline. Placed on Observation status for 12-24 hours."
+      }
+    }
+  ]
+}

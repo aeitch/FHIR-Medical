@@ -1,0 +1,65 @@
+{
+  "resourceType": "Bundle",
+  "id": "synthetic-pt-008-bundle",
+  "type": "collection",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:patient-008",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "synthetic-pt-008",
+        "identifier": [{ "system": "http://hospital.demo.org/mrn", "value": "EPIC-AM142" }],
+        "active": true,
+        "name": [{ "use": "official", "family": "Morgan", "given": ["Arthur", "A."] }],
+        "gender": "male",
+        "birthDate": "1968-11-20"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:encounter-008",
+      "resource": {
+        "resourceType": "Encounter",
+        "id": "enc-008",
+        "status": "in-progress",
+        "class": { "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode", "code": "IMP", "display": "inpatient encounter" },
+        "subject": { "reference": "Patient/synthetic-pt-008", "display": "Arthur A. Morgan" },
+        "period": { "start": "2026-08-25T10:00:00Z" },
+        "reasonCode": [{ "coding": [{ "system": "http://snomed.info/sct", "code": "197456007", "display": "Acute pancreatitis" }], "text": "Acute Pancreatitis" }]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:condition-008",
+      "resource": {
+        "resourceType": "Condition",
+        "id": "cond-008",
+        "clinicalStatus": { "coding": [{ "system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active" }] },
+        "code": { "coding": [{ "system": "http://hl7.org/fhir/sid/icd-10-cm", "code": "K85.90", "display": "Acute pancreatitis without necrosis or infection, unspecified" }], "text": "Acute Interstitial Edematous Pancreatitis with Severe Pain" },
+        "subject": { "reference": "Patient/synthetic-pt-008" }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:obs-009",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-009",
+        "status": "final",
+        "code": { "coding": [{ "system": "http://loinc.org", "code": "2542-9", "display": "Lipase [Enzymatic activity/volume] in Serum or Plasma" }] },
+        "subject": { "reference": "Patient/synthetic-pt-008" },
+        "effectiveDateTime": "2026-08-25T10:30:00Z",
+        "valueQuantity": { "value": 1420, "unit": "U/L", "system": "http://unitsofmeasure.org", "code": "U/L" }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:docref-008",
+      "resource": {
+        "resourceType": "DocumentReference",
+        "id": "doc-008",
+        "status": "current",
+        "type": { "coding": [{ "system": "http://loinc.org", "code": "34117-2", "display": "Admission Note" }] },
+        "subject": { "reference": "Patient/synthetic-pt-008" },
+        "date": "2026-08-25T11:00:00Z",
+        "description": "58yo M presenting with intractable epigastric pain radiating to back and vomiting. Serum lipase 1,420 U/L (> 3x upper limit). CT confirms acute pancreatitis. Requiring aggressive IV hydration at 200 mL/hr and IV opioid analgesia. Inpatient level of care warranted."
+      }
+    }
+  ]
+}
