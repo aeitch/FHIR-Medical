@@ -1,5 +1,4 @@
 from backend.app.audit.logger import audit_logger
-from backend.app.fhir.local_adapter import LocalFixtureFHIRAdapter
 from backend.app.llm.gemini_adapter import VertexAIGeminiAdapter
 from backend.app.llm.guardrails import PHIGuardrail
 from backend.app.llm.mock_adapter import MockLLMAdapter

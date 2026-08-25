@@ -1,14 +1,16 @@
-import os
 import logging
-from fastapi import APIRouter, Request, Query
-from fastapi.responses import HTMLResponse, RedirectResponse
+import os
+
 from backend.app.audit.logger import audit_logger
+from fastapi import APIRouter, Query, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
 
 logger = logging.getLogger("ur_console.smart")
 router = APIRouter(tags=["SMART on FHIR OAuth2"])
 
 EPIC_SANDBOX_AUTH_URL = "https://fhir.epic.com/interconnect-fhir-oauth/oauth2/authorize"
 EPIC_SANDBOX_TOKEN_URL = "https://fhir.epic.com/interconnect-fhir-oauth/oauth2/token"
+
 
 @router.get("/callback", response_class=HTMLResponse)
 async def smart_oauth_callback(
@@ -69,6 +71,7 @@ async def smart_oauth_callback(
         status_code=200,
     )
 
+
 @router.get("/smart/launch")
 async def smart_launch(
     request: Request,
@@ -77,7 +80,9 @@ async def smart_launch(
 ):
     """Initiates the SMART App Launch flow against Epic on FHIR sandbox."""
     client_id = os.getenv("EPIC_CLIENT_ID", "a615c68f-2250-4840-89fc-09f1972dc265")
-    redirect_uri = os.getenv("SMART_REDIRECT_URI", "https://clinefficiency-backend-256461781819.us-central1.run.app/callback")
+    redirect_uri = os.getenv(
+        "SMART_REDIRECT_URI", "https://clinefficiency-backend-256461781819.us-central1.run.app/callback"
+    )
     scope = "launch/patient openid fhirUser patient/Patient.read patient/Encounter.read patient/Condition.read patient/Observation.read patient/DocumentReference.read"
 
     auth_url = (

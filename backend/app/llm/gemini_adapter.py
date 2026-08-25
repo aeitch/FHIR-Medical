@@ -71,7 +71,9 @@ class VertexAIGeminiAdapter(BaseLLMAdapter):
             )
             from backend.app.llm.mock_adapter import MockLLMAdapter
 
-            fallback_res = await MockLLMAdapter().generate_narrative(patient_summary, ur_decision, target_payer, correlation_id)
+            fallback_res = await MockLLMAdapter().generate_narrative(
+                patient_summary, ur_decision, target_payer, correlation_id
+            )
             fallback_res.model_used = "Deterministic Clinical Template (Offline Fallback)"
             return fallback_res
 

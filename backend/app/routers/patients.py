@@ -1,12 +1,14 @@
 import os
 from typing import Any
-from fastapi import APIRouter, HTTPException, Request, Query
+
 from backend.app.audit.logger import audit_logger
-from backend.app.fhir.local_adapter import LocalFixtureFHIRAdapter
 from backend.app.fhir.epic_adapter import EpicFHIRAdapter
 from backend.app.fhir.gcp_healthcare_adapter import GCPHealthcareFHIRAdapter
+from backend.app.fhir.local_adapter import LocalFixtureFHIRAdapter
+from fastapi import APIRouter, HTTPException, Query, Request
 
 router = APIRouter(prefix="/patients", tags=["FHIR Patients"])
+
 
 def get_adapter(provider_override: str | None = None):
     provider = (provider_override or os.getenv("FHIR_PROVIDER", "epic")).lower()
@@ -15,6 +17,7 @@ def get_adapter(provider_override: str | None = None):
     elif provider == "gcp_healthcare":
         return GCPHealthcareFHIRAdapter()
     return LocalFixtureFHIRAdapter()
+
 
 @router.get("", response_model=list[dict[str, Any]])
 async def list_patients(
@@ -32,6 +35,7 @@ async def list_patients(
         details={"patient_count": len(patients), "provider": provider or "default"},
     )
     return patients
+
 
 @router.get("/{patient_id}")
 async def get_patient(
