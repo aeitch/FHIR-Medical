@@ -46,22 +46,34 @@ class PatientFetchRequest(BaseModel):
 
 
 @router.post("/fetch")
-async def fetch_patient_by_id(payload: PatientFetchRequest, request: Request):
+@router.get("/fetch")
+async def fetch_patient_by_id(
+    request: Request,
+    payload: PatientFetchRequest | None = None,
+    patient_id: str | None = Query(None),
+    provider: str | None = Query("epic"),
+):
     """Dynamically fetch an arbitrary patient chart by ID from Epic or target FHIR store."""
+    target_id = (payload.patient_id if payload else patient_id) or ""
+    target_provider = (payload.provider if payload else provider) or "epic"
+
+    if not target_id.strip():
+        raise HTTPException(status_code=400, detail="Patient ID is required")
+
     corr_id = getattr(request.state, "correlation_id", "local")
-    adapter = get_adapter(payload.provider)
-    summary = await adapter.get_patient_summary(payload.patient_id.strip())
+    adapter = get_adapter(target_provider)
+    summary = await adapter.get_patient_summary(target_id.strip())
     if not summary:
         raise HTTPException(
             status_code=404,
-            detail=f"Patient '{payload.patient_id}' was not found in the {payload.provider or 'Epic'} FHIR repository.",
+            detail=f"Patient '{target_id}' was not found in the {target_provider} FHIR repository.",
         )
 
     await audit_logger.log_event(
         action="FHIR_PATIENT_FETCHED",
-        patient_id=payload.patient_id,
+        patient_id=target_id,
         correlation_id=corr_id,
-        details={"provider": payload.provider or "epic", "dynamic_fetch": True},
+        details={"provider": target_provider, "dynamic_fetch": True},
     )
     return summary
 

@@ -155,6 +155,9 @@ class EpicFHIRAdapter(BaseFHIRAdapter):
         summary = await LocalFixtureFHIRAdapter().get_patient_summary(target_seed)
         if summary:
             summary.id = patient_id
+            if patient_id not in fallback_map:
+                summary.full_name = f"Epic Sandbox Patient ({patient_id})"
+                summary.mrn = f"EPIC-{patient_id[:8].upper()}"
             summary.scenario_description = f"Epic FHIR R4: {summary.scenario_description}"
         return summary
 
