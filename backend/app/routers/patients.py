@@ -66,7 +66,7 @@ async def fetch_patient_by_id(
     if not summary:
         raise HTTPException(
             status_code=404,
-            detail=f"Patient '{target_id}' was not found in the {target_provider} FHIR repository.",
+            detail=f"Patient '{target_id}' not found in the configured FHIR source",
         )
 
     await audit_logger.log_event(
@@ -89,7 +89,10 @@ async def get_patient(
     adapter = get_adapter(provider)
     summary = await adapter.get_patient_summary(patient_id)
     if not summary:
-        raise HTTPException(status_code=404, detail=f"Patient {patient_id} not found")
+        raise HTTPException(
+            status_code=404,
+            detail=f"Patient '{patient_id}' not found in the configured FHIR source",
+        )
 
     await audit_logger.log_event(
         action="FHIR_PATIENT_ACCESSED",

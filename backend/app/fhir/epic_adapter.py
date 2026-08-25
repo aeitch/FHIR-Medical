@@ -140,7 +140,7 @@ class EpicFHIRAdapter(BaseFHIRAdapter):
             except Exception as e:
                 logger.warning("Live Epic fetch for %s failed (%s). Using fallback fixture.", patient_id, e)
 
-        # Fallback to rich synthetic bundle mapped to test scenario
+        # Fallback to rich synthetic bundle mapped to known test scenarios ONLY
         from backend.app.fhir.local_adapter import LocalFixtureFHIRAdapter
 
         fallback_map = {
@@ -151,13 +151,14 @@ class EpicFHIRAdapter(BaseFHIRAdapter):
             "synthetic-pt-002": "synthetic-pt-002",
             "synthetic-pt-003": "synthetic-pt-003",
         }
-        target_seed = fallback_map.get(patient_id, "synthetic-pt-001")
+        target_seed = fallback_map.get(patient_id)
+        if not target_seed:
+            logger.info("Patient %s not found in Epic sandbox and not in known fixtures", patient_id)
+            return None
+
         summary = await LocalFixtureFHIRAdapter().get_patient_summary(target_seed)
         if summary:
             summary.id = patient_id
-            if patient_id not in fallback_map:
-                summary.full_name = f"Epic Sandbox Patient ({patient_id})"
-                summary.mrn = f"EPIC-{patient_id[:8].upper()}"
             summary.scenario_description = f"Epic FHIR R4: {summary.scenario_description}"
         return summary
 
@@ -173,6 +174,18 @@ class EpicFHIRAdapter(BaseFHIRAdapter):
             except Exception:
                 pass
 
+        fallback_map = {
+            "erXuFYUfucBZaryVpgxafgw3": "synthetic-pt-001",
+            "eq081-VQEgP8FsSTUDALVUQ3": "synthetic-pt-002",
+            "egqBHVfQCU3FAoDRSmkeKzg3": "synthetic-pt-003",
+            "synthetic-pt-001": "synthetic-pt-001",
+            "synthetic-pt-002": "synthetic-pt-002",
+            "synthetic-pt-003": "synthetic-pt-003",
+        }
+        target_seed = fallback_map.get(patient_id)
+        if not target_seed:
+            return None
+
         from backend.app.fhir.local_adapter import LocalFixtureFHIRAdapter
 
-        return await LocalFixtureFHIRAdapter().get_raw_bundle("synthetic-pt-001")
+        return await LocalFixtureFHIRAdapter().get_raw_bundle(target_seed)
