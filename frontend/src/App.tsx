@@ -207,22 +207,43 @@ export const App: React.FC = () => {
 
   const handleCustomPatientFetch = async (patientId: string, server: string) => {
     setLoadingPatients(true);
+    setLoadingDetail(true);
+    setLoadingUR(true);
     setError(null);
     try {
       const fetched = await fetchPatientById(patientId, server);
-      // Add or replace in patient list if not already present
+      // Add or replace at top of patient list
       setPatients((prev) => {
-        const exists = prev.find((p) => p.id === fetched.id);
-        if (!exists) return [fetched, ...prev];
-        return prev;
+        const filtered = prev.filter((p) => p.id !== fetched.id);
+        return [fetched, ...filtered];
       });
       setSelectedPatientId(fetched.id);
+      setPatientDetail(fetched);
+
+      // Immediately run UR evaluation
+      const evalRes = await evaluateUR(fetched.id, 48, server);
+      setEvaluation(evalRes);
+      setLoadingUR(false);
+
+      // Run narrative generation
+      setLoadingNarrative(true);
+      const narrRes = await generateNarrative(
+        fetched.id,
+        'Medicare Advantage / Commercial',
+        'gemini-2.5-flash',
+        server
+      );
+      setNarrative(narrRes);
+      await refreshAuditAndFinOps();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : `Patient not found in ${server}`;
       setError(msg);
       throw err;
     } finally {
       setLoadingPatients(false);
+      setLoadingDetail(false);
+      setLoadingUR(false);
+      setLoadingNarrative(false);
     }
   };
 
