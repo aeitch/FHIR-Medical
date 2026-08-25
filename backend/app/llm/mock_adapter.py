@@ -1,24 +1,23 @@
 import time
-from typing import Dict, Any
+from typing import Any
+
 from backend.app.llm.adapter import BaseLLMAdapter
-from backend.app.llm.models import NarrativeResponse, CostCalculator
+from backend.app.llm.models import CostCalculator, NarrativeResponse
+
 
 class MockLLMAdapter(BaseLLMAdapter):
     """Deterministic, zero-latency clinical narrative generator for CI and offline demos."""
 
     async def generate_narrative(
         self,
-        patient_summary: Dict[str, Any],
-        ur_decision: Dict[str, Any],
+        patient_summary: dict[str, Any],
+        ur_decision: dict[str, Any],
         target_payer: str = "Medicare Advantage / Commercial",
         correlation_id: str = "",
     ) -> NarrativeResponse:
         start_time = time.time()
         pid = patient_summary.get("id", "synthetic-pt-001")
         name = patient_summary.get("full_name", "Patient")
-        status = ur_decision.get("recommended_status", "inpatient")
-        criteria = ur_decision.get("criteria_met", ["CMS 2-Midnight Rule (42 CFR 412.3)"])
-        gaps = ur_decision.get("documentation_gaps", [])
 
         if "001" in pid:
             narrative = (

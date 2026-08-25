@@ -1,15 +1,16 @@
 import json
-import os
+from datetime import UTC, datetime
 from pathlib import Path
-from datetime import datetime
-from typing import List, Dict, Any, Optional
+from typing import Any
+
 from backend.app.fhir.adapter import BaseFHIRAdapter
 from backend.app.fhir.models import PatientSummary
+
 
 class LocalFixtureFHIRAdapter(BaseFHIRAdapter):
     """Zero-dependency local adapter reading Synthea R4 bundles from disk."""
 
-    def __init__(self, seed_dir: Optional[str] = None):
+    def __init__(self, seed_dir: str | None = None):
         if seed_dir:
             self.seed_dir = Path(seed_dir)
         else:
@@ -17,7 +18,7 @@ class LocalFixtureFHIRAdapter(BaseFHIRAdapter):
             base_path = Path(__file__).resolve().parent.parent.parent.parent
             self.seed_dir = base_path / "seed"
 
-    def _load_bundle(self, file_path: Path) -> Optional[Dict[str, Any]]:
+    def _load_bundle(self, file_path: Path) -> dict[str, Any] | None:
         if not file_path.exists():
             return None
         with open(file_path, "r", encoding="utf-8") as f:
@@ -25,13 +26,13 @@ class LocalFixtureFHIRAdapter(BaseFHIRAdapter):
 
     def _calculate_age(self, birth_date_str: str) -> int:
         try:
-            birth_date = datetime.strptime(birth_date_str, "%Y-%m-%d")
-            today = datetime.now()
+            birth_date = datetime.strptime(birth_date_str, "%Y-%m-%d").replace(tzinfo=UTC)
+            today = datetime.now(UTC)
             return today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
         except Exception:
             return 65
 
-    def _extract_summary(self, bundle: Dict[str, Any]) -> PatientSummary:
+    def _extract_summary(self, bundle: dict[str, Any]) -> PatientSummary:
         entries = bundle.get("entry", [])
         patient_res = None
         encounters = []
@@ -84,10 +85,10 @@ class LocalFixtureFHIRAdapter(BaseFHIRAdapter):
             conditions=conditions,
             observations=observations,
             documents=documents,
-            scenario_description=scenario
+            scenario_description=scenario,
         )
 
-    async def list_patients(self) -> List[Dict[str, Any]]:
+    async def list_patients(self) -> list[dict[str, Any]]:
         patients = []
         if not self.seed_dir.exists():
             return patients
@@ -96,19 +97,23 @@ class LocalFixtureFHIRAdapter(BaseFHIRAdapter):
             bundle = self._load_bundle(file_path)
             if bundle:
                 summary = self._extract_summary(bundle)
-                patients.append({
-                    "id": summary.id,
-                    "mrn": summary.mrn,
-                    "name": summary.full_name,
-                    "gender": summary.gender,
-                    "birthDate": summary.birth_date,
-                    "age": summary.age,
-                    "scenario": summary.scenario_description,
-                    "encounter_class": summary.active_encounter.get("class", {}).get("display", "Inpatient") if summary.active_encounter else "Inpatient"
-                })
+                patients.append(
+                    {
+                        "id": summary.id,
+                        "mrn": summary.mrn,
+                        "name": summary.full_name,
+                        "gender": summary.gender,
+                        "birthDate": summary.birth_date,
+                        "age": summary.age,
+                        "scenario": summary.scenario_description,
+                        "encounter_class": summary.active_encounter.get("class", {}).get("display", "Inpatient")
+                        if summary.active_encounter
+                        else "Inpatient",
+                    }
+                )
         return patients
 
-    async def get_patient_summary(self, patient_id: str) -> Optional[PatientSummary]:
+    async def get_patient_summary(self, patient_id: str) -> PatientSummary | None:
         if not self.seed_dir.exists():
             return None
 
@@ -120,7 +125,7 @@ class LocalFixtureFHIRAdapter(BaseFHIRAdapter):
                     return summary
         return None
 
-    async def get_raw_bundle(self, patient_id: str) -> Optional[Dict[str, Any]]:
+    async def get_raw_bundle(self, patient_id: str) -> dict[str, Any] | None:
         if not self.seed_dir.exists():
             return None
 

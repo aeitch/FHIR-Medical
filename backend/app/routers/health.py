@@ -1,8 +1,10 @@
 import os
-from datetime import datetime
+from datetime import UTC, datetime
+
 from fastapi import APIRouter
 
 router = APIRouter(tags=["Health & Readiness"])
+
 
 @router.get("/health")
 async def health_check():
@@ -10,8 +12,9 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "clinefficiency-ur-console-backend",
-        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "timestamp": datetime.now(UTC).isoformat(),
     }
+
 
 @router.get("/ready")
 async def readiness_check():
@@ -21,5 +24,5 @@ async def readiness_check():
         "fhir_store": "online",
         "llm_provider": os.getenv("LLM_PROVIDER", "vertex_ai"),
         "audit_store": "firestore",
-        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "timestamp": datetime.now(UTC).isoformat(),
     }

@@ -1,11 +1,12 @@
-from fastapi import APIRouter, HTTPException, Request
-from backend.app.ur_engine.models import UREvaluationRequest, UREvaluationResponse
-from backend.app.ur_engine.engine import UREngine
-from backend.app.fhir.local_adapter import LocalFixtureFHIRAdapter
 from backend.app.audit.logger import audit_logger
+from backend.app.fhir.local_adapter import LocalFixtureFHIRAdapter
+from backend.app.ur_engine.engine import UREngine
+from backend.app.ur_engine.models import UREvaluationRequest, UREvaluationResponse
+from fastapi import APIRouter, HTTPException, Request
 
 router = APIRouter(prefix="/ur", tags=["Utilization Review"])
 fhir_adapter = LocalFixtureFHIRAdapter()
+
 
 @router.post("/evaluate", response_model=UREvaluationResponse)
 async def evaluate_patient(payload: UREvaluationRequest, request: Request):

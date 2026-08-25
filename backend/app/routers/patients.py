@@ -1,12 +1,14 @@
-from fastapi import APIRouter, HTTPException, Request
-from typing import List, Dict, Any
-from backend.app.fhir.local_adapter import LocalFixtureFHIRAdapter
+from typing import Any
+
 from backend.app.audit.logger import audit_logger
+from backend.app.fhir.local_adapter import LocalFixtureFHIRAdapter
+from fastapi import APIRouter, HTTPException, Request
 
 router = APIRouter(prefix="/patients", tags=["FHIR Patients"])
 fhir_adapter = LocalFixtureFHIRAdapter()
 
-@router.get("", response_model=List[Dict[str, Any]])
+
+@router.get("", response_model=list[dict[str, Any]])
 async def list_patients(request: Request):
     """Retrieve all available synthetic demo patients."""
     corr_id = getattr(request.state, "correlation_id", "local")
@@ -17,6 +19,7 @@ async def list_patients(request: Request):
         details={"patient_count": len(patients)},
     )
     return patients
+
 
 @router.get("/{patient_id}")
 async def get_patient(patient_id: str, request: Request):

@@ -1,22 +1,23 @@
+from backend.app.audit.logger import audit_logger
+from backend.app.fhir.local_adapter import LocalFixtureFHIRAdapter
+from backend.app.llm.gemini_adapter import VertexAIGeminiAdapter
+from backend.app.llm.guardrails import PHIGuardrail
+from backend.app.llm.mock_adapter import MockLLMAdapter
+from backend.app.llm.models import NarrativeResponse
+from backend.app.llm.ollama_adapter import OllamaGemmaAdapter
+from backend.app.ur_engine.engine import UREngine
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
-from typing import Optional
-from backend.app.llm.models import NarrativeResponse
-from backend.app.llm.guardrails import PHIGuardrail
-from backend.app.llm.gemini_adapter import VertexAIGeminiAdapter
-from backend.app.llm.ollama_adapter import OllamaGemmaAdapter
-from backend.app.llm.mock_adapter import MockLLMAdapter
-from backend.app.fhir.local_adapter import LocalFixtureFHIRAdapter
-from backend.app.ur_engine.engine import UREngine
-from backend.app.audit.logger import audit_logger
 
 router = APIRouter(prefix="/narrative", tags=["LLM Narrative"])
 
+
 class GeneratePayload(BaseModel):
     patient_id: str
-    target_payer: Optional[str] = "Medicare Advantage / Commercial"
-    model_override: Optional[str] = "gemini-2.5-flash"
-    custom_context: Optional[str] = None
+    target_payer: str | None = "Medicare Advantage / Commercial"
+    model_override: str | None = "gemini-2.5-flash"
+    custom_context: str | None = None
+
 
 @router.post("/generate", response_model=NarrativeResponse)
 async def generate_narrative_endpoint(payload: GeneratePayload, request: Request):

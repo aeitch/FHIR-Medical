@@ -2,6 +2,7 @@ import pytest
 from backend.app.fhir.local_adapter import LocalFixtureFHIRAdapter
 from backend.app.ur_engine.engine import UREngine
 
+
 @pytest.mark.asyncio
 async def test_inpatient_evaluation_heart_failure():
     adapter = LocalFixtureFHIRAdapter()
@@ -17,6 +18,7 @@ async def test_inpatient_evaluation_heart_failure():
     assert evaluation.confidence_score >= 0.90
     assert any("loop diuretic" in c.lower() for c in evaluation.criteria_met)
 
+
 @pytest.mark.asyncio
 async def test_observation_evaluation_syncope():
     adapter = LocalFixtureFHIRAdapter()
@@ -30,6 +32,7 @@ async def test_observation_evaluation_syncope():
     assert evaluation.severity_of_illness in ["low", "moderate"]
     assert evaluation.confidence_score >= 0.80
     assert any("observation services" in c.lower() for c in evaluation.criteria_met)
+
 
 @pytest.mark.asyncio
 async def test_inpatient_evaluation_copd_hypercapnia():

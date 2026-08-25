@@ -1,6 +1,6 @@
-from typing import Dict, Any, List
 from backend.app.fhir.models import PatientSummary
 from backend.app.ur_engine.models import UREvaluationResponse
+
 
 class UREngine:
     """Clinical decision engine for observation vs. inpatient utilization review."""
@@ -47,10 +47,14 @@ class UREngine:
                 criteria_met.append(f"Severe hypoxemia confirmed (SpO2 {val}%) requiring continuous oxygen titration")
             if "carbon dioxide" in display and val > 50:
                 has_hypercapnia = True
-                criteria_met.append(f"Acute hypercapnic respiratory acidosis (PaCO2 {val} mmHg) requiring non-invasive ventilation")
+                criteria_met.append(
+                    f"Acute hypercapnic respiratory acidosis (PaCO2 {val} mmHg) requiring non-invasive ventilation"
+                )
             if "nt-probnp" in display and val > 1000:
                 elevated_bnp = True
-                criteria_met.append(f"Markedly elevated NT-proBNP ({val} pg/mL) demonstrating acute myocardial wall stress")
+                criteria_met.append(
+                    f"Markedly elevated NT-proBNP ({val} pg/mL) demonstrating acute myocardial wall stress"
+                )
             if "troponin" in display and val > 0.04:
                 positive_troponin = True
                 criteria_met.append(f"Positive cardiac biomarker elevation (Troponin {val} ng/mL)")
@@ -69,10 +73,14 @@ class UREngine:
             severity = "high"
             intensity = "high"
             criteria_met.append("Acute COPD exacerbation with respiratory failure requiring BiPAP titration")
-            criteria_met.append("Inpatient level of care warranted for arterial blood gas normalization and steroid titration")
+            criteria_met.append(
+                "Inpatient level of care warranted for arterial blood gas normalization and steroid titration"
+            )
             status = "inpatient"
             score = 0.92
-            summary = "Acute hypercapnic respiratory failure requiring positive pressure ventilation warrants inpatient stay."
+            summary = (
+                "Acute hypercapnic respiratory failure requiring positive pressure ventilation warrants inpatient stay."
+            )
 
         elif is_syncope:
             severity = "low" if not positive_troponin else "moderate"
@@ -81,7 +89,9 @@ class UREngine:
             score = 0.88
             two_midnight = False
             criteria_met.append("Single syncopal episode with negative cardiac biomarkers and stable hemodynamics")
-            criteria_met.append("Appropriate for 12-24 hour observation services per CMS Medicare Benefit Policy Manual Ch. 6")
+            criteria_met.append(
+                "Appropriate for 12-24 hour observation services per CMS Medicare Benefit Policy Manual Ch. 6"
+            )
             summary = "Patient is hemodynamically stable with negative biomarkers; observation status indicated."
 
         else:
@@ -90,6 +100,7 @@ class UREngine:
             summary = "Evaluation based on expected duration of medically necessary services."
 
         from backend.app.gap_detect.detector import DocumentationGapDetector
+
         gaps = DocumentationGapDetector.detect_gaps(patient, status)
 
         return UREvaluationResponse(

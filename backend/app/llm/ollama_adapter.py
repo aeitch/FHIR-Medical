@@ -1,13 +1,15 @@
-import time
 import json
-import httpx
 import logging
-from typing import Dict, Any, Optional
+import time
+from typing import Any
+
+import httpx
 from backend.app.llm.adapter import BaseLLMAdapter
-from backend.app.llm.models import NarrativeResponse, CostCalculator
+from backend.app.llm.models import CostCalculator, NarrativeResponse
 from backend.app.prompts.prompt_manager import PromptManager
 
 logger = logging.getLogger("ur_console.llm")
+
 
 class OllamaGemmaAdapter(BaseLLMAdapter):
     """Offline local fallback adapter using Ollama gemma model at 127.0.0.1:11434."""
@@ -19,8 +21,8 @@ class OllamaGemmaAdapter(BaseLLMAdapter):
 
     async def generate_narrative(
         self,
-        patient_summary: Dict[str, Any],
-        ur_decision: Dict[str, Any],
+        patient_summary: dict[str, Any],
+        ur_decision: dict[str, Any],
         target_payer: str = "Medicare Advantage / Commercial",
         correlation_id: str = "",
     ) -> NarrativeResponse:
@@ -52,6 +54,7 @@ class OllamaGemmaAdapter(BaseLLMAdapter):
         except Exception as e:
             logger.warning("Ollama offline call failed: %s. Falling back to deterministic mock generator.", e)
             from backend.app.llm.mock_adapter import MockLLMAdapter
+
             return await MockLLMAdapter().generate_narrative(patient_summary, ur_decision, target_payer, correlation_id)
 
         latency = round((time.time() - start_time) * 1000, 2)
@@ -59,9 +62,13 @@ class OllamaGemmaAdapter(BaseLLMAdapter):
 
         return NarrativeResponse(
             patient_id=patient_summary.get("id", "unknown"),
-            narrative_text=parsed.get("narrative_text", "Medical necessity justified under observation/inpatient criteria."),
+            narrative_text=parsed.get(
+                "narrative_text", "Medical necessity justified under observation/inpatient criteria."
+            ),
             criteria_cited=parsed.get("criteria_cited", ["Local Clinical Practice Guideline"]),
-            clinical_rationale=parsed.get("clinical_rationale", "Patient meets inpatient admission intensity of service thresholds."),
+            clinical_rationale=parsed.get(
+                "clinical_rationale", "Patient meets inpatient admission intensity of service thresholds."
+            ),
             model_used=f"ollama-{self.model_name}",
             prompt_tokens=prompt_tokens,
             completion_tokens=completion_tokens,

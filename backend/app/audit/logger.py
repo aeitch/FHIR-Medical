@@ -1,15 +1,16 @@
+import logging
 import os
 import uuid
-import logging
-from datetime import datetime
-from typing import List, Dict, Any, Optional
+from datetime import UTC, datetime
+from typing import Any, ClassVar
 
 logger = logging.getLogger("ur_console.audit")
+
 
 class AuditLogger:
     """Append-only audit logger for HIPAA access and CLAIR governance tracking."""
 
-    _in_memory_logs: List[Dict[str, Any]] = []
+    _in_memory_logs: ClassVar[list[dict[str, Any]]] = []
 
     def __init__(self, collection_name: str = "ur_audit_logs"):
         self.collection_name = collection_name
@@ -19,6 +20,7 @@ class AuditLogger:
     def _init_firestore(self):
         try:
             from google.cloud import firestore
+
             project_id = os.getenv("GCP_PROJECT_ID", "platinum-factor-489721-f0")
             self.firestore_db = firestore.AsyncClient(project=project_id)
         except Exception as e:
@@ -30,15 +32,15 @@ class AuditLogger:
         patient_id: str = "general",
         actor: str = "dr.uwah@clinefficiency.demo",
         correlation_id: str = "",
-        model: Optional[str] = None,
-        cost_usd: Optional[float] = 0.0,
+        model: str | None = None,
+        cost_usd: float | None = 0.0,
         prompt_tokens: int = 0,
         completion_tokens: int = 0,
-        details: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        details: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         entry = {
             "id": f"audit-{uuid.uuid4()}",
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.now(UTC).isoformat(),
             "action": action,
             "patient_id": patient_id,
             "actor": actor,
@@ -73,10 +75,10 @@ class AuditLogger:
         )
         return entry
 
-    async def get_logs(self, limit: int = 50) -> List[Dict[str, Any]]:
+    async def get_logs(self, limit: int = 50) -> list[dict[str, Any]]:
         return self._in_memory_logs[:limit]
 
-    async def get_finops_summary(self) -> Dict[str, Any]:
+    async def get_finops_summary(self) -> dict[str, Any]:
         narrative_logs = [l for l in self._in_memory_logs if l.get("action") == "NARRATIVE_GENERATED"]
         total_requests = len(narrative_logs)
         total_prompt = sum(l.get("prompt_tokens", 0) for l in narrative_logs)
@@ -90,5 +92,6 @@ class AuditLogger:
             "total_cost_usd": round(total_cost, 6),
             "average_latency_ms": 320.0,
         }
+
 
 audit_logger = AuditLogger()

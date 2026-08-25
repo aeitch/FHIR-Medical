@@ -1,17 +1,20 @@
-from typing import List, Optional
+from typing import ClassVar
+
 from pydantic import BaseModel, Field
+
 
 class NarrativeRequest(BaseModel):
     patient_id: str
-    target_payer: Optional[str] = "Medicare Advantage / Commercial"
-    include_gap_remediation: Optional[bool] = True
-    custom_context: Optional[str] = None
+    target_payer: str | None = "Medicare Advantage / Commercial"
+    include_gap_remediation: bool | None = True
+    custom_context: str | None = None
+
 
 class NarrativeResponse(BaseModel):
     patient_id: str
     narrative_text: str
-    criteria_cited: List[str] = Field(default_factory=list)
-    clinical_rationale: Optional[str] = None
+    criteria_cited: list[str] = Field(default_factory=list)
+    clinical_rationale: str | None = None
     model_used: str
     prompt_tokens: int = 0
     completion_tokens: int = 0
@@ -20,10 +23,11 @@ class NarrativeResponse(BaseModel):
     disclaimer: str = "AI-generated decision support — requires human physician review before submission."
     correlation_id: str = ""
 
+
 class CostCalculator:
     """Calculates granular FinOps token costs for supported models."""
 
-    PRICING_PER_1M_TOKENS = {
+    PRICING_PER_1M_TOKENS: ClassVar[dict[str, dict[str, float]]] = {
         # Gemini 2.5 Flash on Vertex AI ($0.075/1M input, $0.30/1M output)
         "gemini-2.5-flash": {"input": 0.075, "output": 0.30},
         "gemini-2.0-flash": {"input": 0.075, "output": 0.30},

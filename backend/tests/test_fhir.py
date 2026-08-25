@@ -1,6 +1,7 @@
 import pytest
 from backend.app.fhir.local_adapter import LocalFixtureFHIRAdapter
 
+
 @pytest.mark.asyncio
 async def test_list_synthetic_patients():
     adapter = LocalFixtureFHIRAdapter()
@@ -10,6 +11,7 @@ async def test_list_synthetic_patients():
     assert "synthetic-pt-001" in ids
     assert "synthetic-pt-002" in ids
     assert "synthetic-pt-003" in ids
+
 
 @pytest.mark.asyncio
 async def test_get_patient_summary_fields():
@@ -23,6 +25,7 @@ async def test_get_patient_summary_fields():
     assert len(summary.conditions) >= 1
     assert len(summary.observations) >= 2
     assert len(summary.documents) >= 1
+
 
 @pytest.mark.asyncio
 async def test_get_raw_bundle():

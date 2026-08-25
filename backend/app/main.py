@@ -1,8 +1,9 @@
 import logging
+
+from backend.app.audit.middleware import CorrelationIdMiddleware
+from backend.app.routers import audit, health, narrative, patients, ur
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.app.audit.middleware import CorrelationIdMiddleware
-from backend.app.routers import health, patients, ur, narrative, audit
 
 # Configure structured logging
 logging.basicConfig(
@@ -39,4 +40,5 @@ app.include_router(audit.router, prefix="/api")
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("backend.app.main:app", host="0.0.0.0", port=8000, reload=True)

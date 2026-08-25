@@ -1,8 +1,10 @@
-import uuid
 import time
+import uuid
+
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
+
 
 class CorrelationIdMiddleware(BaseHTTPMiddleware):
     """Propagates X-Correlation-ID across every API request for distributed tracing."""
