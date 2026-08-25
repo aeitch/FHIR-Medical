@@ -1,10 +1,41 @@
-import { PatientSummary, UREvaluation, NarrativeResult, AuditLogEntry, FinOpsSummary } from '../types';
+import { PatientSummary, PatientDetail, UREvaluation, NarrativeResult, AuditLogEntry, FinOpsSummary } from '../types';
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL as string) || '/api';
 
 export async function getPatients(): Promise<PatientSummary[]> {
   const res = await fetch(`${API_BASE}/patients`);
   if (!res.ok) throw new Error('Failed to fetch patients');
+  return res.json();
+}
+
+export async function getPatientDetail(patientId: string): Promise<PatientDetail> {
+  const res = await fetch(`${API_BASE}/patients/${patientId}`);
+  if (!res.ok) throw new Error(`Failed to fetch details for patient ${patientId}`);
+  return res.json();
+}
+
+export async function fetchPatientById(patientId: string, provider: string = 'epic'): Promise<PatientDetail> {
+  const res = await fetch(`${API_BASE}/patients/fetch`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patient_id: patientId, provider }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Failed to fetch patient from FHIR repository' }));
+    throw new Error(err.detail || 'Patient not found in sandbox');
+  }
+  return res.json();
+}
+
+export async function getRawFHIRBundle(patientId: string): Promise<Record<string, unknown>> {
+  const res = await fetch(`${API_BASE}/patients/${patientId}/raw`);
+  if (!res.ok) throw new Error(`Failed to retrieve raw FHIR bundle for ${patientId}`);
+  return res.json();
+}
+
+export async function getFHIRMetadata(): Promise<Record<string, unknown>> {
+  const res = await fetch(`${API_BASE}/fhir/metadata`);
+  if (!res.ok) throw new Error('Failed to fetch FHIR CapabilityStatement');
   return res.json();
 }
 

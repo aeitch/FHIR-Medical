@@ -6,18 +6,51 @@ import { GapList } from './components/GapList';
 import { NarrativeViewer } from './components/NarrativeViewer';
 import { FinOpsWidget } from './components/FinOpsWidget';
 import { AuditLogViewer } from './components/AuditLogViewer';
+import { EvidenceViewer } from './components/EvidenceViewer';
+import { CFOOnePager } from './components/CFOOnePager';
 import { TermsPage } from './components/TermsPage';
-import { PatientSummary, UREvaluation, NarrativeResult, AuditLogEntry, FinOpsSummary } from './types';
-import { getPatients, evaluateUR, generateNarrative, getAuditLogs, getFinOpsMetrics } from './services/api';
-import { RefreshCw, FileText } from 'lucide-react';
+import {
+  PatientSummary,
+  PatientDetail,
+  UREvaluation,
+  NarrativeResult,
+  AuditLogEntry,
+  FinOpsSummary,
+} from './types';
+import {
+  getPatients,
+  getPatientDetail,
+  fetchPatientById,
+  getRawFHIRBundle,
+  evaluateUR,
+  generateNarrative,
+  getAuditLogs,
+  getFinOpsMetrics,
+} from './services/api';
+import {
+  ShieldCheck,
+  FileText,
+  AlertTriangle,
+  RefreshCw,
+  Sparkles,
+  Database,
+  Eye,
+  Info,
+} from 'lucide-react';
+
+type DossierTab = 'decision' | 'evidence' | 'gaps' | 'narrative' | 'audit';
 
 export const App: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<string>(window.location.pathname);
   const [patients, setPatients] = useState<PatientSummary[]>([]);
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
+  const [patientDetail, setPatientDetail] = useState<PatientDetail | null>(null);
   const [evaluation, setEvaluation] = useState<UREvaluation | null>(null);
   const [narrative, setNarrative] = useState<NarrativeResult | null>(null);
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
+  const [activeTab, setActiveTab] = useState<DossierTab>('decision');
+  const [showTechDetails, setShowTechDetails] = useState<boolean>(false);
+
   const [finops, setFinOps] = useState<FinOpsSummary>({
     total_requests: 0,
     total_prompt_tokens: 0,
@@ -27,6 +60,7 @@ export const App: React.FC = () => {
   });
 
   const [loadingPatients, setLoadingPatients] = useState<boolean>(true);
+  const [loadingDetail, setLoadingDetail] = useState<boolean>(false);
   const [loadingUR, setLoadingUR] = useState<boolean>(false);
   const [loadingNarrative, setLoadingNarrative] = useState<boolean>(false);
   const [loadingAudit, setLoadingAudit] = useState<boolean>(false);
@@ -43,7 +77,7 @@ export const App: React.FC = () => {
     setCurrentPath(path);
   };
 
-  // Load patients on mount
+  // Load initial patients
   useEffect(() => {
     async function loadInitial() {
       try {
@@ -54,8 +88,8 @@ export const App: React.FC = () => {
           setSelectedPatientId(pts[0].id);
         }
       } catch (err: unknown) {
-        console.error('Failed to load initial patients', err);
-        setError('Failed to connect to backend FHIR service. Ensure API server is running.');
+        console.error('Failed to load patients', err);
+        setError('Failed to connect to backend FHIR service.');
       } finally {
         setLoadingPatients(false);
       }
@@ -64,44 +98,75 @@ export const App: React.FC = () => {
     refreshAuditAndFinOps();
   }, []);
 
-  // When patient selection changes, run UR evaluation and generate narrative
+  // When selected patient changes, fetch details, run UR evaluation, and generate narrative
   useEffect(() => {
     if (!selectedPatientId) return;
 
-    async function evaluatePatient() {
+    async function loadPatientData() {
       try {
+        setLoadingDetail(true);
         setLoadingUR(true);
         setError(null);
+
+        // Fetch detailed patient clinical data
+        const detail = await getPatientDetail(selectedPatientId);
+        setPatientDetail(detail);
+        setLoadingDetail(false);
+
+        // Run UR decision evaluation
         const evalRes = await evaluateUR(selectedPatientId);
         setEvaluation(evalRes);
+        setLoadingUR(false);
 
-        // Automatically trigger narrative generation for selected patient
+        // Auto-trigger narrative generation
         setLoadingNarrative(true);
         const narrRes = await generateNarrative(selectedPatientId);
         setNarrative(narrRes);
         await refreshAuditAndFinOps();
       } catch (err: unknown) {
-        console.error('Evaluation error', err);
-        setError('Error during clinical evaluation or narrative synthesis.');
+        console.error('Error during clinical evaluation', err);
+        setError('Error fetching patient data or evaluating clinical guidelines.');
       } finally {
+        setLoadingDetail(false);
         setLoadingUR(false);
         setLoadingNarrative(false);
       }
     }
 
-    evaluatePatient();
+    loadPatientData();
   }, [selectedPatientId]);
 
   const refreshAuditAndFinOps = async () => {
     try {
       setLoadingAudit(true);
-      const [logs, metrics] = await Promise.all([getAuditLogs(10), getFinOpsMetrics()]);
+      const [logs, metrics] = await Promise.all([getAuditLogs(15), getFinOpsMetrics()]);
       setAuditLogs(logs);
       setFinOps(metrics);
     } catch (err) {
       console.error('Error fetching audit logs', err);
     } finally {
       setLoadingAudit(false);
+    }
+  };
+
+  const handleCustomPatientFetch = async (patientId: string) => {
+    setLoadingPatients(true);
+    setError(null);
+    try {
+      const fetched = await fetchPatientById(patientId, 'epic');
+      // Add or replace in patient list if not already present
+      setPatients((prev) => {
+        const exists = prev.find((p) => p.id === fetched.id);
+        if (!exists) return [fetched, ...prev];
+        return prev;
+      });
+      setSelectedPatientId(fetched.id);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Patient not found in sandbox';
+      setError(msg);
+      throw err;
+    } finally {
+      setLoadingPatients(false);
     }
   };
 
@@ -121,9 +186,20 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleRawJSONFetch = async () => {
+    if (!selectedPatientId) return {};
+    return await getRawFHIRBundle(selectedPatientId);
+  };
+
   if (currentPath === '/terms') {
     return <TermsPage onBack={() => navigateTo('/')} />;
   }
+
+  const activePatientName = patientDetail?.name || 'Active Patient';
+  const gapsCount = evaluation?.documentation_gaps?.length || 0;
+  const patientSpecificLogs = auditLogs.filter(
+    (l) => l.patient_id === selectedPatientId || l.patient_id === 'general'
+  );
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-16 flex flex-col justify-between">
@@ -132,7 +208,7 @@ export const App: React.FC = () => {
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
           {error && (
-            <div className="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-xl text-xs font-semibold flex items-center justify-between">
+            <div className="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-xl text-xs font-semibold flex items-center justify-between shadow-sm">
               <span>{error}</span>
               <button onClick={() => setError(null)} className="underline ml-4">
                 Dismiss
@@ -140,32 +216,117 @@ export const App: React.FC = () => {
             </div>
           )}
 
-          {/* 1. Patient Selector */}
+          {/* 1. Patient Selector & Live Epic Search */}
           <PatientSelector
             patients={patients}
             selectedId={selectedPatientId}
             onSelect={setSelectedPatientId}
+            onFetchCustomPatient={handleCustomPatientFetch}
             loading={loadingPatients}
           />
 
-          {/* 2. UR Clinical Evaluation & Documentation Gaps */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <URDecisionCard evaluation={evaluation} loading={loadingUR} />
+          {/* 2. Executive CFO / Revenue Defense Card */}
+          <CFOOnePager evaluation={evaluation} patientName={activePatientName} />
+
+          {/* 3. Auditor-Grade Dossier Navigation Tabs */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="border-b border-slate-200 bg-slate-50/70 px-4 flex flex-wrap gap-1">
+              <button
+                onClick={() => setActiveTab('decision')}
+                className={`py-3 px-4 text-xs font-bold flex items-center gap-1.5 border-b-2 transition-all ${
+                  activeTab === 'decision'
+                    ? 'border-teal-600 text-teal-700 bg-white shadow-sm'
+                    : 'border-transparent text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <ShieldCheck className="w-4 h-4" />
+                <span>Level-of-Care Decision</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('evidence')}
+                className={`py-3 px-4 text-xs font-bold flex items-center gap-1.5 border-b-2 transition-all ${
+                  activeTab === 'evidence'
+                    ? 'border-teal-600 text-teal-700 bg-white shadow-sm'
+                    : 'border-transparent text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Database className="w-4 h-4" />
+                <span>Clinical Evidence & Labs (ICD/LOINC)</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('gaps')}
+                className={`py-3 px-4 text-xs font-bold flex items-center gap-1.5 border-b-2 transition-all ${
+                  activeTab === 'gaps'
+                    ? 'border-teal-600 text-teal-700 bg-white shadow-sm'
+                    : 'border-transparent text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <AlertTriangle className="w-4 h-4" />
+                <span>Documentation Gaps ({gapsCount})</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('narrative')}
+                className={`py-3 px-4 text-xs font-bold flex items-center gap-1.5 border-b-2 transition-all ${
+                  activeTab === 'narrative'
+                    ? 'border-teal-600 text-teal-700 bg-white shadow-sm'
+                    : 'border-transparent text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>AI Appeal Narrative</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('audit')}
+                className={`py-3 px-4 text-xs font-bold flex items-center gap-1.5 border-b-2 transition-all ${
+                  activeTab === 'audit'
+                    ? 'border-teal-600 text-teal-700 bg-white shadow-sm'
+                    : 'border-transparent text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Eye className="w-4 h-4" />
+                <span>Case Audit Trail</span>
+              </button>
             </div>
-            <div>
-              <GapList gaps={evaluation?.documentation_gaps || []} />
+
+            {/* Tab Content Panes */}
+            <div className="p-4 sm:p-6">
+              {activeTab === 'decision' && (
+                <div className="space-y-4">
+                  <URDecisionCard evaluation={evaluation} loading={loadingUR} />
+                </div>
+              )}
+
+              {activeTab === 'evidence' && (
+                <EvidenceViewer
+                  patient={patientDetail}
+                  loading={loadingDetail}
+                  onViewRawJSON={handleRawJSONFetch}
+                />
+              )}
+
+              {activeTab === 'gaps' && (
+                <GapList gaps={evaluation?.documentation_gaps || []} />
+              )}
+
+              {activeTab === 'narrative' && (
+                <NarrativeViewer
+                  narrative={narrative}
+                  loading={loadingNarrative}
+                  onGenerate={handleManualGenerate}
+                />
+              )}
+
+              {activeTab === 'audit' && (
+                <AuditLogViewer logs={patientSpecificLogs} loading={loadingAudit} />
+              )}
             </div>
           </div>
 
-          {/* 3. LLM Payer Narrative Generator */}
-          <NarrativeViewer
-            narrative={narrative}
-            loading={loadingNarrative}
-            onGenerate={handleManualGenerate}
-          />
-
-          {/* 4. FinOps Widget & Refresh Controls */}
+          {/* 4. FinOps Demo Tracker & Refresh */}
           <div className="space-y-2">
             <div className="flex justify-end">
               <button
@@ -180,12 +341,38 @@ export const App: React.FC = () => {
             <FinOpsWidget metrics={finops} />
           </div>
 
-          {/* 5. Append-Only Audit Trail */}
-          <AuditLogViewer logs={auditLogs} loading={loadingAudit} />
+          {/* 5. Collapsible Technical & Interoperability Details (Clean UX) */}
+          <div className="border border-slate-200 bg-white rounded-xl p-4 shadow-sm">
+            <button
+              onClick={() => setShowTechDetails(!showTechDetails)}
+              className="flex items-center justify-between w-full text-xs font-bold text-slate-700 hover:text-teal-700 transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <Info className="w-4 h-4 text-teal-600" />
+                <span>Technical Specifications & Interoperability Conformance</span>
+              </div>
+              <span className="text-[11px] text-teal-700">{showTechDetails ? 'Hide' : 'Show Details'}</span>
+            </button>
+
+            {showTechDetails && (
+              <div className="mt-4 pt-4 border-t border-slate-100 text-xs text-slate-600 space-y-2">
+                <p>
+                  • <strong>FHIR Conformance:</strong> Meets HL7 FHIR R4 standard (4.0.1) with SMART App Launch 2.0 PKCE.
+                </p>
+                <p>
+                  • <strong>Capability Statement:</strong> Conformance manifest exposed via standard{' '}
+                  <code className="bg-slate-100 px-1 py-0.5 rounded text-teal-800">/api/fhir/metadata</code>.
+                </p>
+                <p>
+                  • <strong>AI Governance:</strong> Powered by Vertex AI (<code className="bg-slate-100 px-1 py-0.5 rounded">gemini-2.5-flash</code>) with local Ollama offline fallback and HIPAA § 164.312(b) audit trail.
+                </p>
+              </div>
+            )}
+          </div>
         </main>
       </div>
 
-      {/* Global Clean Product Footer */}
+      {/* Clean Global Footer */}
       <footer className="border-t border-slate-200 bg-white py-6 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div className="flex items-center gap-4">
@@ -193,7 +380,7 @@ export const App: React.FC = () => {
             <span>•</span>
             <span>HL7 FHIR R4 Standard</span>
             <span>•</span>
-            <span>HIPAA & SOC 2 Readiness</span>
+            <span>HIPAA & SOC 2 Technical Readiness</span>
           </div>
           <div className="flex items-center gap-4">
             <button

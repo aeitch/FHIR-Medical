@@ -1,3 +1,45 @@
+export interface ClinicalCondition {
+  clinicalStatus?: { coding?: Array<{ code?: string; display?: string }> };
+  code?: {
+    coding?: Array<{ system?: string; code?: string; display?: string }>;
+    text?: string;
+  };
+}
+
+export interface ClinicalObservation {
+  code?: {
+    coding?: Array<{ system?: string; code?: string; display?: string }>;
+    text?: string;
+  };
+  effectiveDateTime?: string;
+  valueQuantity?: {
+    value?: number;
+    unit?: string;
+    code?: string;
+  };
+  referenceRange?: Array<{
+    low?: { value?: number; unit?: string };
+    high?: { value?: number; unit?: string };
+  }>;
+}
+
+export interface ClinicalDocument {
+  type?: {
+    coding?: Array<{ system?: string; code?: string; display?: string }>;
+    text?: string;
+  };
+  date?: string;
+  description?: string;
+}
+
+export interface PatientDetail extends PatientSummary {
+  conditions?: ClinicalCondition[];
+  observations?: ClinicalObservation[];
+  documents?: ClinicalDocument[];
+  active_encounter?: Record<string, unknown>;
+  scenario_description?: string;
+}
+
 export interface PatientSummary {
   id: string;
   mrn: string;

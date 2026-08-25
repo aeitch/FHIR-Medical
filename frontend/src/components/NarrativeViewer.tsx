@@ -46,7 +46,7 @@ export const NarrativeViewer: React.FC<Props> = ({ narrative, loading, onGenerat
           >
             <option value="gemini-2.5-flash">Vertex AI: gemini-2.5-flash</option>
             <option value="ollama-gemma">Local Ollama: gemma ($0)</option>
-            <option value="mock-llm">Deterministic Synthetic Mock</option>
+            <option value="mock-llm">Clinical Template (LLM-Ready Fallback)</option>
           </select>
 
           <button
