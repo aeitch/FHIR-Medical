@@ -107,7 +107,7 @@ jobs:
               echo "FAIL: $file exceeds 800 lines ($LINES lines)"
               FAIL=1
             fi
-          done < <(find backend frontend terraform -type f \( -name "*.py" -o -name "*.ts" -o -name "*.tsx" -o -name "*.tf" \) 2>/dev/null)
+          done < <(find backend frontend terraform docs -type d \( -name ".venv" -o -name "node_modules" -o -name ".terraform" -o -name "dist" \) -prune -o -type f \( -name "*.py" -o -name "*.ts" -o -name "*.tsx" -o -name "*.tf" -o -name "*.md" \) -print 2>/dev/null)
           if [ "$FAIL" -eq 1 ]; then
             echo "One or more files exceeded the 800-line cap. Please modularize."
             exit 1
