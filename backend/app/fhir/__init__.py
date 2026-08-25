@@ -7,9 +7,9 @@ from backend.app.fhir.registry import FHIR_SERVER_REGISTRY, FHIRServerType, get_
 from backend.app.fhir.smart_hapi_adapter import SmartHapiFHIRAdapter
 
 __all__ = [
+    "FHIR_SERVER_REGISTRY",
     "BaseFHIRAdapter",
     "EpicFHIRAdapter",
-    "FHIR_SERVER_REGISTRY",
     "FHIRServerType",
     "GCPHealthcareFHIRAdapter",
     "LocalFixtureFHIRAdapter",

@@ -140,9 +140,7 @@ class SmartHapiFHIRAdapter(BaseFHIRAdapter):
                     else []
                 )
 
-                scenario_desc = (
-                    f"Live {self.server_name} Record ({parsed_demo['name']}) with {len(conditions)} condition(s) and {len(observations)} observation(s)."
-                )
+                scenario_desc = f"Live {self.server_name} Record ({parsed_demo['name']}) with {len(conditions)} condition(s) and {len(observations)} observation(s)."
 
                 return PatientSummary(
                     id=patient_id,

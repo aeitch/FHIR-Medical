@@ -1,5 +1,6 @@
 import os
 from enum import Enum
+
 from backend.app.fhir.adapter import BaseFHIRAdapter
 from backend.app.fhir.epic_adapter import EpicFHIRAdapter
 from backend.app.fhir.gcp_healthcare_adapter import GCPHealthcareFHIRAdapter
