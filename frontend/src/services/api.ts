@@ -2,22 +2,38 @@ import { PatientSummary, PatientDetail, UREvaluation, NarrativeResult, AuditLogE
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL as string) || '/api';
 
+const noCacheHeaders = {
+  'Cache-Control': 'no-cache, no-store, must-revalidate',
+  'Pragma': 'no-cache',
+  'Expires': '0',
+};
+
 export async function getPatients(): Promise<PatientSummary[]> {
-  const res = await fetch(`${API_BASE}/patients`);
+  const res = await fetch(`${API_BASE}/patients?_t=${Date.now()}`, {
+    cache: 'no-store',
+    headers: noCacheHeaders,
+  });
   if (!res.ok) throw new Error('Failed to fetch patients');
   return res.json();
 }
 
 export async function getPatientDetail(patientId: string): Promise<PatientDetail> {
-  const res = await fetch(`${API_BASE}/patients/${patientId}`);
+  const res = await fetch(`${API_BASE}/patients/${patientId}?_t=${Date.now()}`, {
+    cache: 'no-store',
+    headers: noCacheHeaders,
+  });
   if (!res.ok) throw new Error(`Failed to fetch details for patient ${patientId}`);
   return res.json();
 }
 
 export async function fetchPatientById(patientId: string, provider: string = 'epic'): Promise<PatientDetail> {
-  const res = await fetch(`${API_BASE}/patients/fetch`, {
+  const res = await fetch(`${API_BASE}/patients/fetch?_t=${Date.now()}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    cache: 'no-store',
+    headers: {
+      'Content-Type': 'application/json',
+      ...noCacheHeaders,
+    },
     body: JSON.stringify({ patient_id: patientId, provider }),
   });
   if (!res.ok) {
@@ -28,21 +44,31 @@ export async function fetchPatientById(patientId: string, provider: string = 'ep
 }
 
 export async function getRawFHIRBundle(patientId: string): Promise<Record<string, unknown>> {
-  const res = await fetch(`${API_BASE}/patients/${patientId}/raw`);
+  const res = await fetch(`${API_BASE}/patients/${patientId}/raw?_t=${Date.now()}`, {
+    cache: 'no-store',
+    headers: noCacheHeaders,
+  });
   if (!res.ok) throw new Error(`Failed to retrieve raw FHIR bundle for ${patientId}`);
   return res.json();
 }
 
 export async function getFHIRMetadata(): Promise<Record<string, unknown>> {
-  const res = await fetch(`${API_BASE}/fhir/metadata`);
+  const res = await fetch(`${API_BASE}/fhir/metadata?_t=${Date.now()}`, {
+    cache: 'no-store',
+    headers: noCacheHeaders,
+  });
   if (!res.ok) throw new Error('Failed to fetch FHIR CapabilityStatement');
   return res.json();
 }
 
 export async function evaluateUR(patientId: string, expectedHours: number = 48): Promise<UREvaluation> {
-  const res = await fetch(`${API_BASE}/ur/evaluate`, {
+  const res = await fetch(`${API_BASE}/ur/evaluate?_t=${Date.now()}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    cache: 'no-store',
+    headers: {
+      'Content-Type': 'application/json',
+      ...noCacheHeaders,
+    },
     body: JSON.stringify({ patient_id: patientId, expected_stay_hours: expectedHours }),
   });
   if (!res.ok) throw new Error('Failed to evaluate UR decision');
@@ -54,9 +80,13 @@ export async function generateNarrative(
   targetPayer: string = 'Medicare Advantage / Commercial',
   provider: string = 'gemini-2.5-flash'
 ): Promise<NarrativeResult> {
-  const res = await fetch(`${API_BASE}/narrative/generate`, {
+  const res = await fetch(`${API_BASE}/narrative/generate?_t=${Date.now()}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    cache: 'no-store',
+    headers: {
+      'Content-Type': 'application/json',
+      ...noCacheHeaders,
+    },
     body: JSON.stringify({ patient_id: patientId, target_payer: targetPayer, model_override: provider }),
   });
   if (!res.ok) {
@@ -67,13 +97,19 @@ export async function generateNarrative(
 }
 
 export async function getAuditLogs(limit: number = 20): Promise<AuditLogEntry[]> {
-  const res = await fetch(`${API_BASE}/audit?limit=${limit}`);
+  const res = await fetch(`${API_BASE}/audit?limit=${limit}&_t=${Date.now()}`, {
+    cache: 'no-store',
+    headers: noCacheHeaders,
+  });
   if (!res.ok) throw new Error('Failed to fetch audit logs');
   return res.json();
 }
 
 export async function getFinOpsMetrics(): Promise<FinOpsSummary> {
-  const res = await fetch(`${API_BASE}/audit/finops`);
+  const res = await fetch(`${API_BASE}/audit/finops?_t=${Date.now()}`, {
+    cache: 'no-store',
+    headers: noCacheHeaders,
+  });
   if (!res.ok) throw new Error('Failed to fetch FinOps metrics');
   return res.json();
 }

@@ -159,18 +159,25 @@ export const App: React.FC = () => {
   const handleGlobalRefresh = async () => {
     if (!selectedPatientId) return;
     try {
+      setLoadingDetail(true);
       setLoadingUR(true);
       setLoadingNarrative(true);
-      const [evalRes, narrRes] = await Promise.all([
+      setEvaluation(null);
+      setNarrative(null);
+
+      const [detail, evalRes, narrRes] = await Promise.all([
+        getPatientDetail(selectedPatientId),
         evaluateUR(selectedPatientId),
         generateNarrative(selectedPatientId),
       ]);
+      setPatientDetail(detail);
       setEvaluation(evalRes);
       setNarrative(narrRes);
       await refreshAuditAndFinOps();
     } catch (err) {
       console.error('Error during global refresh', err);
     } finally {
+      setLoadingDetail(false);
       setLoadingUR(false);
       setLoadingNarrative(false);
     }
