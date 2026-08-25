@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 router = APIRouter(prefix="/fhir", tags=["FHIR Conformance & Metadata"])
 
+
 @router.get("/metadata")
 async def get_capability_statement():
     """Returns official HL7 FHIR 4.0.1 CapabilityStatement for ClinEfficiency UR Console."""
