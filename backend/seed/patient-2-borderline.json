@@ -1,0 +1,157 @@
+{
+  "resourceType": "Bundle",
+  "id": "synthetic-pt-002-bundle",
+  "type": "collection",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:patient-002",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "synthetic-pt-002",
+        "identifier": [
+          {
+            "system": "http://hospital.demo.org/mrn",
+            "value": "SYNTH-MRN-1002"
+          }
+        ],
+        "active": true,
+        "name": [
+          {
+            "use": "official",
+            "family": "Chen",
+            "given": ["Linda", "M."]
+          }
+        ],
+        "gender": "female",
+        "birthDate": "1972-09-18"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:encounter-002",
+      "resource": {
+        "resourceType": "Encounter",
+        "id": "enc-002",
+        "status": "in-progress",
+        "class": {
+          "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+          "code": "OBSENC",
+          "display": "observation encounter"
+        },
+        "subject": {
+          "reference": "Patient/synthetic-pt-002",
+          "display": "Linda M. Chen"
+        },
+        "period": {
+          "start": "2026-08-25T02:15:00Z"
+        },
+        "reasonCode": [
+          {
+            "coding": [
+              {
+                "system": "http://snomed.info/sct",
+                "code": "271594007",
+                "display": "Syncope"
+              }
+            ],
+            "text": "Vasovagal vs. Orthostatic Syncope Episode"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:condition-002",
+      "resource": {
+        "resourceType": "Condition",
+        "id": "cond-002",
+        "clinicalStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+              "code": "active"
+            }
+          ]
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/sid/icd-10-cm",
+              "code": "R55",
+              "display": "Syncope and collapse"
+            }
+          ],
+          "text": "Near-syncope with transient lightheadedness"
+        },
+        "subject": {
+          "reference": "Patient/synthetic-pt-002"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:obs-003",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-003",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "49563-0",
+              "display": "Troponin I.cardiac [Mass/volume]"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/synthetic-pt-002"
+        },
+        "effectiveDateTime": "2026-08-25T03:00:00Z",
+        "valueQuantity": {
+          "value": 0.01,
+          "unit": "ng/mL",
+          "system": "http://unitsofmeasure.org",
+          "code": "ng/mL"
+        },
+        "referenceRange": [
+          {
+            "high": {
+              "value": 0.04,
+              "unit": "ng/mL"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:docref-002",
+      "resource": {
+        "resourceType": "DocumentReference",
+        "id": "doc-002",
+        "status": "current",
+        "type": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "34117-2",
+              "display": "Emergency observation note"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/synthetic-pt-002"
+        },
+        "date": "2026-08-25T03:30:00Z",
+        "description": "53yo F with single syncopal event while gardening. Normal EKG, negative serial troponins, hemodynamically stable. Observation status indicated for 12-24 hours telemetry."
+      }
+    }
+  ]
+}

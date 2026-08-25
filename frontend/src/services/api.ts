@@ -1,6 +1,6 @@
 import { PatientSummary, UREvaluation, NarrativeResult, AuditLogEntry, FinOpsSummary } from '../types';
 
-const API_BASE = '/api';
+const API_BASE = (import.meta.env.VITE_API_BASE_URL as string) || '/api';
 
 export async function getPatients(): Promise<PatientSummary[]> {
   const res = await fetch(`${API_BASE}/patients`);

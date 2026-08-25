@@ -1,0 +1,157 @@
+{
+  "resourceType": "Bundle",
+  "id": "synthetic-pt-003-bundle",
+  "type": "collection",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:patient-003",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "synthetic-pt-003",
+        "identifier": [
+          {
+            "system": "http://hospital.demo.org/mrn",
+            "value": "SYNTH-MRN-1003"
+          }
+        ],
+        "active": true,
+        "name": [
+          {
+            "use": "official",
+            "family": "Davis",
+            "given": ["Robert", "E."]
+          }
+        ],
+        "gender": "male",
+        "birthDate": "1951-11-04"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:encounter-003",
+      "resource": {
+        "resourceType": "Encounter",
+        "id": "enc-003",
+        "status": "in-progress",
+        "class": {
+          "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+          "code": "IMP",
+          "display": "inpatient encounter"
+        },
+        "subject": {
+          "reference": "Patient/synthetic-pt-003",
+          "display": "Robert E. Davis"
+        },
+        "period": {
+          "start": "2026-08-23T14:00:00Z"
+        },
+        "reasonCode": [
+          {
+            "coding": [
+              {
+                "system": "http://snomed.info/sct",
+                "code": "19829001",
+                "display": "COPD exacerbation"
+              }
+            ],
+            "text": "Acute Exacerbation of Chronic Obstructive Pulmonary Disease"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:condition-003",
+      "resource": {
+        "resourceType": "Condition",
+        "id": "cond-003",
+        "clinicalStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+              "code": "active"
+            }
+          ]
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/sid/icd-10-cm",
+              "code": "J44.1",
+              "display": "Chronic obstructive pulmonary disease with (acute) exacerbation"
+            }
+          ],
+          "text": "Acute COPD Exacerbation with Hypercapnia Risk"
+        },
+        "subject": {
+          "reference": "Patient/synthetic-pt-003"
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:obs-004",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-004",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "2019-8",
+              "display": "Carbon dioxide in Arterial blood"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/synthetic-pt-003"
+        },
+        "effectiveDateTime": "2026-08-23T14:30:00Z",
+        "valueQuantity": {
+          "value": 54,
+          "unit": "mm[Hg]",
+          "system": "http://unitsofmeasure.org",
+          "code": "mm[Hg]"
+        },
+        "referenceRange": [
+          {
+            "high": {
+              "value": 45,
+              "unit": "mm[Hg]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:docref-003",
+      "resource": {
+        "resourceType": "DocumentReference",
+        "id": "doc-003",
+        "status": "current",
+        "type": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "34117-2",
+              "display": "Admission consultation note"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/synthetic-pt-003"
+        },
+        "date": "2026-08-23T16:00:00Z",
+        "description": "74yo M with severe wheezing, accessory muscle use, and PaCO2 54. Placed on BiPAP and IV Solu-Medrol. High payer denial risk due to ambiguous documentation on baseline home oxygen versus acute escalation."
+      }
+    }
+  ]
+}
