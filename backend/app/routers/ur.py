@@ -1,18 +1,18 @@
 from backend.app.audit.logger import audit_logger
-from backend.app.fhir.local_adapter import LocalFixtureFHIRAdapter
+from backend.app.routers.patients import get_adapter
 from backend.app.ur_engine.engine import UREngine
 from backend.app.ur_engine.models import UREvaluationRequest, UREvaluationResponse
 from fastapi import APIRouter, HTTPException, Request
 
 router = APIRouter(prefix="/ur", tags=["Utilization Review"])
-fhir_adapter = LocalFixtureFHIRAdapter()
 
 
 @router.post("/evaluate", response_model=UREvaluationResponse)
 async def evaluate_patient(payload: UREvaluationRequest, request: Request):
     """Run utilization review decision engine against patient clinical data."""
     corr_id = getattr(request.state, "correlation_id", "local")
-    summary = await fhir_adapter.get_patient_summary(payload.patient_id)
+    adapter = get_adapter()
+    summary = await adapter.get_patient_summary(payload.patient_id)
     if not summary:
         raise HTTPException(status_code=404, detail=f"Patient {payload.patient_id} not found")
 

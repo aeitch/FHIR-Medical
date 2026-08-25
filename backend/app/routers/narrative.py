@@ -5,6 +5,7 @@ from backend.app.llm.guardrails import PHIGuardrail
 from backend.app.llm.mock_adapter import MockLLMAdapter
 from backend.app.llm.models import NarrativeResponse
 from backend.app.llm.ollama_adapter import OllamaGemmaAdapter
+from backend.app.routers.patients import get_adapter
 from backend.app.ur_engine.engine import UREngine
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
@@ -40,8 +41,8 @@ async def generate_narrative_endpoint(payload: GeneratePayload, request: Request
             )
 
     # 2. Fetch Patient Data & UR Evaluation
-    fhir_adapter = LocalFixtureFHIRAdapter()
-    summary = await fhir_adapter.get_patient_summary(payload.patient_id)
+    adapter_fhir = get_adapter()
+    summary = await adapter_fhir.get_patient_summary(payload.patient_id)
     if not summary:
         raise HTTPException(status_code=404, detail=f"Patient {payload.patient_id} not found")
 
