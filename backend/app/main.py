@@ -49,6 +49,7 @@ app.include_router(smart.router)
 
 # Versioned Routes: Mount under both /api and /api/v1
 for prefix in ["/api", "/api/v1"]:
+    app.include_router(health.router, prefix=prefix)
     app.include_router(patients.router, prefix=prefix)
     app.include_router(ur.router, prefix=prefix)
     app.include_router(narrative.router, prefix=prefix)

@@ -13,6 +13,15 @@ def test_health_and_readiness_endpoints():
     assert res.status_code == 200
     assert res.json()["status"] == "ready"
 
+    # Verify versioned /api/v1/health and /api/health
+    res_v1 = client.get("/api/v1/health")
+    assert res_v1.status_code == 200
+    assert res_v1.json()["status"] == "healthy"
+
+    res_api = client.get("/api/health")
+    assert res_api.status_code == 200
+    assert res_api.json()["status"] == "healthy"
+
 
 def test_api_patients_flow():
     res = client.get("/api/patients")
@@ -54,6 +63,64 @@ def test_api_narrative_generate_and_audit():
     logs = res_audit.json()
     assert len(logs) > 0
     assert any(l["action"] == "NARRATIVE_GENERATED" for l in logs)
+
+
+def test_fhir_metadata_capability_statement():
+    res = client.get("/api/fhir/metadata")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["resourceType"] == "CapabilityStatement"
+    assert data["fhirVersion"] == "4.0.1"
+    assert data["software"]["name"] == "ClinEfficiency Pro UR Console"
+
+    # Verify /api/v1 prefix also works
+    res_v1 = client.get("/api/v1/fhir/metadata")
+    assert res_v1.status_code == 200
+    assert res_v1.json()["resourceType"] == "CapabilityStatement"
+
+
+def test_api_patients_fetch_and_raw_bundle():
+    # Test dynamic fetch by ID
+    res_fetch = client.post("/api/patients/fetch", json={"patient_id": "erXuFYUfucBZaryVpgxafgw3", "provider": "epic"})
+    assert res_fetch.status_code == 200
+    assert res_fetch.json()["id"] == "erXuFYUfucBZaryVpgxafgw3"
+
+    # Test raw bundle inspection
+    res_raw = client.get("/api/patients/erXuFYUfucBZaryVpgxafgw3/raw")
+    assert res_raw.status_code == 200
+    assert res_raw.json()["resourceType"] == "Bundle"
+
+
+def test_smart_launch_and_callback_endpoints():
+    res_launch = client.get("/smart/launch", follow_redirects=False)
+    assert res_launch.status_code in [302, 307]
+    assert "fhir.epic.com" in res_launch.headers["location"]
+
+    res_cb = client.get("/callback?code=mock_auth_code_12345&state=test_state")
+    assert res_cb.status_code == 200
+    assert "Epic on FHIR Connected" in res_cb.text
+
+
+def test_unknown_patient_returns_404():
+    # 1. GET unknown patient returns 404 (BUG 1 FIX)
+    res_get = client.get("/api/patients/deadbeef-notreal")
+    assert res_get.status_code == 404
+    assert "not found" in res_get.json()["detail"].lower()
+
+    # 2. POST fetch unknown patient returns 404
+    res_fetch = client.post("/api/patients/fetch", json={"patient_id": "deadbeef-notreal"})
+    assert res_fetch.status_code == 404
+    assert "not found" in res_fetch.json()["detail"].lower()
+
+    # 3. POST UR evaluate with unknown patient returns 404 without evaluating (BUG 2 FIX)
+    res_ur = client.post("/api/ur/evaluate", json={"patient_id": "nope", "expected_stay_hours": 48})
+    assert res_ur.status_code == 404
+    assert "not found" in res_ur.json()["detail"].lower()
+
+    # 4. POST narrative generate with unknown patient returns 404
+    res_narrative = client.post("/api/narrative/generate", json={"patient_id": "nope"})
+    assert res_narrative.status_code == 404
+    assert "not found" in res_narrative.json()["detail"].lower()
 
 
 def test_api_guardrail_blocks_unsafe_input():

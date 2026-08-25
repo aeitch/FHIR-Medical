@@ -43,7 +43,10 @@ async def generate_narrative_endpoint(payload: GeneratePayload, request: Request
     adapter_fhir = get_adapter()
     summary = await adapter_fhir.get_patient_summary(payload.patient_id)
     if not summary:
-        raise HTTPException(status_code=404, detail=f"Patient {payload.patient_id} not found")
+        raise HTTPException(
+            status_code=404,
+            detail=f"Patient '{payload.patient_id}' not found in the configured FHIR source",
+        )
 
     ur_eval = UREngine.evaluate(summary)
 

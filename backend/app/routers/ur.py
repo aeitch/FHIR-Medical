@@ -14,7 +14,10 @@ async def evaluate_patient(payload: UREvaluationRequest, request: Request):
     adapter = get_adapter()
     summary = await adapter.get_patient_summary(payload.patient_id)
     if not summary:
-        raise HTTPException(status_code=404, detail=f"Patient {payload.patient_id} not found")
+        raise HTTPException(
+            status_code=404,
+            detail=f"Patient '{payload.patient_id}' not found in the configured FHIR source",
+        )
 
     evaluation = UREngine.evaluate(summary, expected_hours=payload.expected_stay_hours or 48)
 
